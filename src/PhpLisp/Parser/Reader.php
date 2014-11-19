@@ -9,18 +9,46 @@ use PhpLisp\Exception\ParseException as Exception;
 
 class Reader {
     
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static $sentenceStack;
     
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function initialization() {
         self::$sentenceStack = array();
     }
     
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function isNilSentence ($sentence) {
         $isNil = (strtoupper($sentence) === strtoupper(Expression::$nilInstance->nodeValue));
         $isEmpty = (str_replace(" ", "", $sentence) === "()");
         return $isNil || $isEmpty;
     }
 
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function isTrueSentence ($sentence) {
         return (strtoupper($sentence) === strtoupper(Expression::$trueInstance->nodeValue));
     }
@@ -91,6 +119,13 @@ class Reader {
         return true;
     }
 
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function isScalarSentence ($sentence) {
         //lispにおいてのスカラかどかを調べます ※つまり数値スカラか文字列スカラの判定
         $isString = self::isStringSentence($sentence);
@@ -98,6 +133,13 @@ class Reader {
         return $isNumeric || $isString;
     }
 
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function isSymbolSentence ($sentence) {
         // 空白はtoken解析用
         if(strpos($sentence, " ") !== false) {
@@ -111,6 +153,13 @@ class Reader {
         return true;
     }
 
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function trimSingleComment ($line) {
         $offset = strpos($line, ";");
         if($offset !== false) {
@@ -119,6 +168,13 @@ class Reader {
         return $line;
     }
     
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function trimMultiComment ($line) {
         $openTag = "#|";
         $closeTag = "|#";
@@ -141,6 +197,13 @@ class Reader {
         return $line;
     }
     
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function scanner ($input) {
         //インラインコメントを削除
         $input = self::trimSingleComment($input);
@@ -186,13 +249,27 @@ class Reader {
         self::clearSentence();
         return $result;
     }
-    //S式を正規化
+
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function deform ($sentence) {
         //処理前に正規化する
         $sentence = self::normalize ($sentence);
         return self::deformQuote($sentence);
     }
     
+    /**
+     * S式を正規化
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function normalize ($sentence) {
         //: 'a' b => 'a'b
         while(strpos($sentence, "' ") !==false) {
@@ -207,6 +284,13 @@ class Reader {
     
     //Macro: Quoteを展開する
     //現在はまずPHP関数で展開させるが、Macroシステムを実装できる次第、Macroで書き直す
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function deformQuote ($sentence) {
         if(substr_count($sentence, "'") === 0) {
             return $sentence;
@@ -302,14 +386,35 @@ class Reader {
         return $input;
     }
     
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function pushSentence ($sentence_string) {
         self::$sentenceStack[] = $sentence_string;
     }
 
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function getSentence () {
         return self::$sentenceStack;
     }
     
+    /**
+     * 
+     * @api
+     * @param string $sentence
+     * @return bool
+     * @link
+     */
     public static function clearSentence () {
         self::$sentenceStack = array();
     }

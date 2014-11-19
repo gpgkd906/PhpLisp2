@@ -18,11 +18,11 @@ class Type {
     const Stack = 21;
     
     public static $typeTable = array(
-        "undefine", "expression", "scalar", "symbol", "cons", "true", "nil", "func", "lambda", "stream"
+        "undefine", "expression", "scalar", "symbol", "cons", "true", "nil", "func", "lambda", "stream", "stack"
     );
 
     public static function isLispExpression ($node) {
-        return is_a($node, "PhpLisp\Expression\Expression");
+        return $node instanceOf Expression;
     }
     
     public static function isScalar ($node) {

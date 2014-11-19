@@ -1,16 +1,17 @@
-  Welcome to PhpLisp。
-  this is a toy project, it is not completion.but you can do what you want, to break the Interpreter, or test it。
-  just have fun!
   欢迎尝试PhpLisp。
   这是我的一个玩具项目，它并不完整。但是你可以随意尝试任何可能的指令，来破坏这个解释器，或者是测试它的行为。
   希望你玩的开心。
+  你可以使用(debug t/nil)命令来打开/关闭debug模式
+  在debug模式下，你可以直接使用(dump obj)命令来打印任何对象的内部结构。比如(dump nil), 试试看？
+  
+  Welcome to PhpLisp。
+  this is a toy project, it is not completion.but you can do what you want, to break the Interpreter, or test it。
+  just have fun!
+  use (debug t/nil) to on/off debug mode
+  with debug mode, you can dump any object with (dump obj), try it?
+
   ようこそ、PhpLispへ. 
   これはおもちゃプロジェクトであり、また完成していません。どんなことしても構いません、インタプリタを壊してもいいし、テストだけでもいい。
   楽しんでください。
-
-  use (debug t/nil) to on/off debug mode
-  你可以使用(debug t/nil)命令来打开/关闭debug模式
-  在解释器不知道该怎么处理数据的时候（因为还没完成嘛...）,debug模式下会打印出该数据的内部结构。
-  比如说你可以试试输入t，然后直接回车。
-  而在debug模式下，你可以直接使用(dump)命令来打印任何对象。比如(dump nil), 试试看？
   (debug t/nil)でデバグモードを切り替えます
+  デバグモードが有効の場合，(dump obj)でオブジェクトの内部構造が表示される、やってみませんか?
