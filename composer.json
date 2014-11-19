@@ -1,0 +1,17 @@
+{
+    "name": "gpgkd906/phplisp",
+    "description": "PhpLisp is yet another Lisp Interpreter/Dialect written in PHP.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "chen han",
+            "email": "gpgkd906@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+	"psr-0": {
+	    "PhpLisp": "src/"
+	}
+    }
+}
