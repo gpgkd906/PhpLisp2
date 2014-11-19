@@ -3,10 +3,10 @@
 namespace PhpLisp\Parser;
 
 use PhpLisp\Environment\Debug as Debug;
-use PhpLisp\Environment\Stack as Stack;
 use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Evaluator\Evaluator as Evaluator;
 use PhpLisp\Expression\Type as Type;
+use PhpLisp\Expression\Stack as Stack;
 use PhpLisp\Exception\ParseException as Exception;
 
 class Parser {
@@ -102,10 +102,15 @@ class Parser {
         if($type == self::Group) {
             $stack = new Stack;
             do {
+                
                 $sentence = self::warpSentence($sentence);
                 list($left, $right) = self::separate($sentence);
                 $stack->push( self::read($left) );
-                $sentence = trim($right);                
+                $sentence = trim($right);
+                if($sentence === "()") {
+                    $stack->push( Expression::$nilInstance );
+                    $sentence = "";
+                }
             } while (isset($sentence[0]));
             return $stack;
         }

@@ -5,22 +5,26 @@ namespace PhpLisp\Expression;
 use PhpLisp\Environment\Debug as Debug;
 
 class Type {
-    const Quote = 1;
-    const Expression = 2;
-    const Scalar = 3;
-    const Symbol = 4;
-    const SymbolSymbol = 5;
-    const Cons = 6;
-    const True = 7;
-    const Nil = 8;
-    const Func = 9;
-    const Lambda = 10;
-    const Stream = 11;
-
+    const Expression = 1;
+    const Scalar = 2;
+    const Symbol = 3;
+    const Cons = 4;
+    const True = 5;
+    const Nil = 6;
+    const Func = 7;
+    const Lambda = 8;
+    const Stream = 9;
+    
+    const Stack = 21;
+    
     public static $typeTable = array(
-        "undefine", "quote", "expression", "scalar", "symbol", "symbol-symbol", "cons", "true", "nil", "func", "lambda", "stream"
+        "undefine", "expression", "scalar", "symbol", "cons", "true", "nil", "func", "lambda", "stream"
     );
 
+    public static function isLispExpression ($node) {
+        return is_a($node, "PhpLisp\Expression\Expression");
+    }
+    
     public static function isScalar ($node) {
         if(!self::isLispExpression($node)) {
             return false;
@@ -35,10 +39,6 @@ class Type {
         return $node->nodeType === self::Symbol;
     }
 
-    public static function isLispExpression ($node) {
-        return is_a($node, "PhpLisp\Expression\Expression");
-    }
-    
     public static function isList ($node) {
         if(!self::isLispExpression($node)) {
             return false;
@@ -51,13 +51,6 @@ class Type {
         return true;
     }
     
-    public static function isQuote ($node) {
-        if(!self::isLispExpression($node)) {
-            return false;
-        }
-        return $node->nodeType === self::Quote;
-    }
-
     public static function isNull ($node) {
         if(!self::isLispExpression($node)) {
             return false;
@@ -91,6 +84,10 @@ class Type {
             return false;
         }
         return $node->nodeType === self::Lambda;
+    }
+
+    public static function isStack ($stack) {
+        return $stack instanceOf Stack;
     }
     
 }

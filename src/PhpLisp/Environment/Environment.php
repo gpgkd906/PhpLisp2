@@ -127,8 +127,11 @@ class Environment {
         return $input;
     }
     
-    public static function write($evalResult) {
-        fwrite(self::$stdout, $evalResult);
+    public static function write($result) {
+        if(Type::isLispExpression($result)) {
+            $result = Evaluator::asString($result);
+        }
+        fwrite(self::$stdout, $result);
     }
 
     public static function terminal() {

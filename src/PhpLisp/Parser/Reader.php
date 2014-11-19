@@ -56,9 +56,19 @@ class Reader {
      * @link
      */
     public static function isExpressionSentence ($sentence) {
+        //括弧がないとS式ではない
         if(substr_count($sentence, "(") === 0) {
             return false;
         }
+        //先頭が ( か '(でないとS式ではない
+        if(substr($sentence, 0, 1) !== "(" && substr($sentence, 0, 2) !== "'(" ) {
+            return false;
+        }
+        //末尾が ) でないとS式ではない
+        if(substr($sentence, -1, 1) !== ")") {
+            return false;
+        }
+        // (1 2 3) (2 3 4)のようなS式が並んでも、全体としてはS式ではない
         $in = 0;
         $length = strlen($sentence);
         $lastOffset = $length - 1;
@@ -142,8 +152,6 @@ class Reader {
         $input = self::trimMultiComment($input);
         //重複な空白を取り除く
         $input = Parser::removeDummySpace($input);
-        //最外側の空白を取り除く
-        $input = trim($input);
         //有効なreplであるかどかチェックする
         $input = self::checkSentence($input);
         //有効なreplでなければ次の行を読む
@@ -152,6 +160,8 @@ class Reader {
         }
         //replを正規化する、例えば'a' b => 'a 'bとか, ※macro処理もここで実装予定
         $sentence = self::deform($input);
+        //正規化による無駄な空白を取り除く
+        $sentence = Parser::removeDummySpace($sentence);
         //パタンマッチ　※lispでは文法がないので、ここも極めてシンプルになる
         switch(true) {
         case (bool) self::isExpressionSentence($sentence):

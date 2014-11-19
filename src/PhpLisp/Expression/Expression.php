@@ -16,9 +16,10 @@ class Expression {
     public static $nilInstance;
     public static $trueInstance;
     
-    public function __construct($nodeValue = null, $nodeType = null, $leftLeaf = null, $rightLeaf = null) {
-        if(isset($nodeValue)) {
-            $this->nodeValue = $nodeValue;
+    public function __construct($rawValue = null, $nodeType = null, $leftLeaf = null, $rightLeaf = null) {
+        if(isset($rawValue)) {
+            $this->nodeValue = $rawValue;
+            $this->rawValue = $rawValue;
         }
         if(isset($nodeType)) {
             $this->setType($nodeType);

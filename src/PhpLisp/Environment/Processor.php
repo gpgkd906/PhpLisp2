@@ -6,6 +6,7 @@ use PhpLisp\Environment\Debug as Debug;
 use PhpLisp\Evaluator\Evaluator as Evaluator;
 use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Expression\Type as Type;
+use PhpLisp\Expression\Stack as Stack;
 use PhpLisp\Parser\Parser as Parser;
 use PhpLisp\Exception\EvalException as Exception;
 
@@ -83,18 +84,21 @@ class Processor {
             "debug" => new Expression("debug", Type::Func, null, function($tree, $node, $scope) {
                 Debug::$mode = !Type::isNull($tree);
             }),
-            "__add__" => new Expression("__add__", Type::Func, null, function($tree, $node, $scope) {
-                return Evaluator::asNumber(Evaluator::car($tree, $scope), $scope) + Evaluator::asNumber(Evaluator::car(Evaluator::cdr($tree, $scope), $scope), $scope);
+            "quote" => new Expression("quote", Type::Func, null, function($tree, $node, $scope) {
+                return $tree;
             }),
             "+" => new Expression("+", Type::Func, null, function($tree, $node, $scope) {
-                return Evaluator::reduce($tree, function($sum, $node, $scope) {
-                    return $sum + Evaluator::asNumber($node, $scope);
+                return Evaluator::reduce($tree, function($res, $node, $scope) {
+                    return $res + Evaluator::asNumber($node, $scope);
                 }, 0, $scope);
             }),
             "-" => new Expression("-", Type::Func, null, function($tree, $node, $scope) {
-                return Evaluator::reduce(Evaluator::cdr($tree, $scope), function($sum, $node, $scope) {
-                    return $sum - Evaluator::asNumber($node, $scope);
-                }, Evaluator::asNumber(Evaluator::car($tree, $scope), $scope), $scope);
+                return Evaluator::reduce($tree, function($res, $node, $scope) {
+                    if(Type::isNull($res)) {
+                        return Evaluator::asNumber($node, $scope);
+                    }
+                    return $res - Evaluator::asNumber($node, $scope);
+                }, null, $scope);
             }),
             "*" => new Expression("*", Type::Func, null, function($tree, $node, $scope) {
                 return Evaluator::reduce($tree, function($res, $node, $scope) {
@@ -102,23 +106,33 @@ class Processor {
                 }, 1, $scope);
             }),
             "/" => new Expression("/", Type::Func, null, function($tree, $node, $scope) {
-                return Evaluator::reduce(Evaluator::cdr($tree, $scope), function($res, $node, $scope) {
+                //Debug::p($tree);
+                return Evaluator::reduce($tree, function($res, $node, $scope) {
+                    if(Type::isNull($res)) {
+                        return Evaluator::asNumber($node, $scope);
+                    }
                     return $res / Evaluator::asNumber($node, $scope);
-                }, Evaluator::asNumber(Evaluator::car($tree, $scope), $scope), $scope);
+                }, null, $scope);
             }),
             "progn" => new Expression("progn", Type::Func, null, function($tree, $node, $scope) {
                 
             }),
-            "defun" => new Expression("defun", Type::Func, null, function ($tree, $node, $scope) {
-                $symbol = Evaluator::car($tree, $scope);
+            "defun" => new Expression("defun", Type::Func, null, function ($stack, $node, $scope) {
+                if( !Type::isStack($stack) ) {
+                    throw new Exception("Error: Too few arguments.");
+                }
+                if( $stack->size() < 2 ) {
+                    throw new Exception("Error: Too few arguments.");
+                }
+                $symbol = $stack->shift();
                 if( !Type::isSymbol($symbol) ) {
                     throw new Exception("Error: {Evaluator::asString($symbol)} is not of type SYMBOL.");
                 }
-                $node = Evaluator::cdr($tree, $scope);
-                $funcParam = Evaluator::car($node, $scope);
-                $funcBody = Evaluator::cdr($node, $scope);
-                $nodeValue = "(LAMBDA-BLOCK " . Evaluator::asString($symbol) . " " . Evaluator::asString($node) . ")";
-                $lambda = new Expression($nodeValue, Type::Lambda, $funcParam, $funcBody);
+                $lambdaParam = Stack::fromExpression($stack->shift());
+                $lambdaBody = $stack;
+                $nodeValue = str_ireplace("defun", "LAMBDA-BLOCK", Evaluator::asString($node) );
+                $lambda = new Expression($nodeValue, Type::Lambda, $lambdaParam, $lambdaBody);
+                debug::p($lambda);
                 return Environment::setLambda($scope, Evaluator::asString($symbol), $lambda);
             }),
             "setf" => new Expression("setf", Type::Func, null, function ($tree, $node, $scope) {
@@ -141,10 +155,10 @@ class Processor {
                 return Expression::$nilInstance;
             }),
             "car" => new Expression("car", Type::Func, "car", function ($tree, $node, $scope) {
-                return Evaluator::car(Evaluator::tryEvalExpression($tree, $scope), $scope);
+                return Evaluator::car($tree, $scope);
             }),
             "cdr" => new Expression("cdr", Type::Func, "cdr", function ($tree, $node, $scope) {
-                return Evaluator::cdr(Evaluator::tryEvalExpression($tree, $scope), $scope);
+                return Evaluator::cdr($tree, $scope);
             }),
             "atom" => new Expression("atom", Type::Func, null, function ($tree, $node, $scope) {
                 $tree = Evaluator::tryEvalExpression($tree, $scope);
