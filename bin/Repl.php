@@ -3,7 +3,9 @@
 require "../vendor/autoload.php";
 
 use PhpLisp\PhpLisp as PhpLisp;
+use PhpLisp\Environment\Debug as Debug;
 
+Debug::$mode = true;
 PhpLisp::initialization();
 PhpLisp::write("PhpLisp (Lisp is implement by PHP) 0.1.0 Nov 14 2014 18:11");
 PhpLisp::write(PHP_EOL);

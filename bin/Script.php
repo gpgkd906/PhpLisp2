@@ -2,7 +2,9 @@
 <?php
 require "../vendor/autoload.php";
 
+use PhpLisp\Environment\Debug as Debug;
 use PhpLisp\PhpLisp as PhpLisp;
 
+Debug::$mode = true;
 PhpLisp::initialization();
-PhpLisp::script("test.lisp");
+PhpLisp::interpreter("test.lisp");

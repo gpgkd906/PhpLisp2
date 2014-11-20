@@ -356,7 +356,7 @@ class Reader {
     // ※ここでは有効なS式であるかどかのチェックを行っていません
     // ※ 成功例："1 2 3"が有効なS式ではないが，有効なreplではある
     // ※ 失敗例：")("が有効なS式ではないし、有効なreplでもないので
-    public function checkSentence ($input) {
+    public static function checkSentence ($input) {
         //1、$inputが空白では次の行を読む
         if(strlen($input) === 0) {
             return false;
