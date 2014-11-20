@@ -59,8 +59,8 @@ class Environment {
         if(!$symbolTable = self::$symbolTable->get($scope)) {
             return false;
         }
-        if(!$target = $symbolTable->get($symbol)) {
-            return false;
+        if(($target = $symbolTable->get($symbol)) === null) {
+            return null;
         }
         return $target;
     }
@@ -85,8 +85,8 @@ class Environment {
         if(!$symbolTable = self::$lambdaTable->get($scope)) {
             $symbolTable = self::$lambdaTable->get(self::$rootScope);
         }
-        if(!$target = $symbolTable->get($symbol)) {
-            return false;
+        if(($target = $symbolTable->get($symbol)) === null) {
+            return null;
         }
         return $target;
     }
@@ -129,7 +129,7 @@ class Environment {
     
     public static function write($result) {
         if(Type::isLispExpression($result)) {
-            $result = Evaluator::asString($result);
+            $result = Evaluator::asString($result); 
         }
         fwrite(self::$stdout, $result);
     }

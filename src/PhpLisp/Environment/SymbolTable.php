@@ -22,6 +22,7 @@ class SymbolTable {
         if(isset($this->Table[$symbol])) {
             return $this->Table[$symbol];
         }
+        return null;
     }
 
     public function has($symbol) {

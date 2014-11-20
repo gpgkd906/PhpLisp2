@@ -129,6 +129,9 @@ class Parser {
             list($sentence_left, $sentence_right) = self::separate($sentence);
             $node->leftLeaf = self::read($sentence_left);
             $node->rightLeaf = self::read($sentence_right) ?: Expression::$nilInstance;
+            if(!isset($sentence_right[0])) {
+                $node->setType(Type::Cons);
+            }
             break;
         }
         return $node;

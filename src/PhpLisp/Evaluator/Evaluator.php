@@ -10,7 +10,7 @@ use PhpLisp\Parser\Parser as Parser;
 use PhpLisp\Environment\Environment as Environment;
 use PhpLisp\Environment\Debug as Debug;
 
-class Evaluator {
+class Evaluator extends AbstractEvaluator {
 
     public static function evalTree($ast, $scope) {
         if(Type::isExpression($ast)) {
@@ -26,7 +26,7 @@ class Evaluator {
         if(Type::isLispExpression($node)) {
             if(Type::isExpression($node)) {
                 $pass = $node;
-                $node = self::evalExpression($node, $scope);
+                $node = ExpressionEvaluator::evaluate($node, $scope);
                 if(Type::isNull($node)) {
                     return $node;
                 } else if (Type::isExpression($node)) {
@@ -56,7 +56,7 @@ class Evaluator {
         $origin = $node;
         if(Type::isLispExpression($node)) {
             if(Type::isExpression($node)) {
-                $node = self::evalExpression($node, $scope);
+                $node = ExpressionEvaluator::evaluate($node, $scope);
                 if(Type::isNull($node)) {
                     $cdr = $node;
                 } else if (Type::isExpression($node)) {
@@ -91,24 +91,13 @@ class Evaluator {
         return new Expression($quoteValue, Type::Quote);
     }
 
-    public function asString($node) {
-        if(Type::isLispExpression($node)) {
-            $raw = $node->rawValue;
-        } else {
-            $raw = $node;
-        }
-        if(is_string($raw)) {
-            return strtoupper($raw);
-        }
-    }
-
     public function asNumber($node, $scope) {
         if( Type::isExpression($node) ) {
-            $node = self::evalExpression($node, $scope);
+            $node = ExpressionEvaluator::evaluate($node, $scope);
             return self::asNumber($node, $scope);
         }
         if ( Type::isSymbol($node) ) {
-            $node = self::evalSymbol($node, $scope);
+            $node = SymbolEvaluator::evaluate($node, $scope);
             return self::asNumber($node, $scope);
         }
         if( Type::isLispExpression($node)) {
@@ -121,65 +110,31 @@ class Evaluator {
         }
     }
 
-    public static function unpackQuote($node) {
-        if(Type::isQuote($node)) {
-            return Parser::read($node->nodeValue, false);
-        } else {
-            return $node;
+    public static function tryEvalSymbol($tree, $scope) {
+        if(!Type::isSymbol($tree)) {
+            return $tree;
         }
+        return SymbolEvaluator::evaluate($tree, $scope);
     }
 
     public static function tryEvalExpression($tree, $scope) {
         if(!Type::isExpression($tree)) {
             return $tree;
         }
-        return self::evalExpression($tree, $scope);
+        return ExpressionEvaluator::evaluate($tree, $scope);
     }
 
-    public static function evalExpression($tree, $scope) {
-        $result = false;
-        $left = $tree->leftLeaf;
-        $right = $tree->rightLeaf;
-        if( Type::isSymbol($left) ) {
-            $node = Environment::getLambda($scope, $left->nodeValue);
-        }
-        if( !isset($node) || false === $node ) {
-            $nodeString = self::asString($left);
-            throw new Exception("Error: {$nodeString} is invalid as a function.");
-        }
-        if( Type::isFunc($node) ) {
-            $result = call_user_func($node->rightLeaf, $right, $tree, $scope);
-        } else if(Type::isLambda($node)) {
-            if(!Type::isQuote($right)) {
-                $right = self::quote($right);
-            }
-            $result = Lambda::apply($node, $right, self::asString($left));
-        } else {
-            $nodeString = self::asString($left);
-            throw new Exception("Error: The function {$nodeString} is undefined.");
-        }
-        return $result;
-    }
-    
-    public static function evalSymbol($node, $scope) {
-        if($result = Environment::getSymbol($scope, $node->nodeValue)) {
-            return $result;
-        } else {
-            $nodeString = self::asString($node);
-            throw new Exception("Error: The variable {$nodeString} is unbound.");
-        }
-    }
-
-    public static function evaluate($tree, $scope) {
+    public static function evaluate(Expression $tree, $scope) {
         switch($tree->nodeType) {
         case Type::Symbol:
-            return self::evalSymbol($tree, $scope);
+            return SymbolEvaluator::evaluate($tree, $scope);
             break;
         case Type::Scalar:
             return self::asString($tree);
             break;
         case Type::Expression:
-            return self::evalExpression($tree, $scope);
+            return ExpressionEvaluator::evaluate($tree, $scope);
+            //return self::evalExpression($tree, $scope);
             break;
         case Type::Cons:
             Debug::t($tree);

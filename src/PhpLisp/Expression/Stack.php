@@ -1,6 +1,7 @@
 <?php
 namespace PhpLisp\Expression;
 
+use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Environment\Debug as Debug;
 
 class Stack {
@@ -16,9 +17,13 @@ class Stack {
             $this->stack[] = $unit;
         }
     }
-
+    
     public function pop () {
-        return array_pop($this->stack);
+        $unit = array_pop($this->stack);
+        if($unit === null) {
+            return Expression::$nilInstance;
+        }
+        return $unit;
     }
 
     public function unshift ($unit) {
@@ -26,7 +31,11 @@ class Stack {
     }
 
     public function shift () {
-        return array_shift($this->stack);
+        $unit = array_shift($this->stack);
+        if($unit === null) {
+            return Expression::$nilInstance;
+        }
+        return $unit;
     }
 
     public function size () {
@@ -43,6 +52,14 @@ class Stack {
 
     public function hasInstance ($object) {
         return is_a($object, __CLASS__);
+    }
+
+    public function getAt ($index) {
+        if(isset($this->stack[$index])) {
+            return $this->stack[$index];
+        } else {
+            return Expression::$nilInstance;
+        }
     }
 
     public function toExpression () {
@@ -62,9 +79,9 @@ class Stack {
         return $node;
     }
 
-    public static function fromExpression($node) {
+    public static function fromExpression(Expression $node) {
         $stack = new self;
-        if(Type::isExpression($node)) {
+        if(Type::isExpression($node) || Type::isCons($node)) {
             $stack->push( $node->leftLeaf );
             $right = $node->rightLeaf;
             if(Type::isStack($right)) {

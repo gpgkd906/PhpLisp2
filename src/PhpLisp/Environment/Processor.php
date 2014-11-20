@@ -10,6 +10,8 @@ use PhpLisp\Expression\Stack as Stack;
 use PhpLisp\Parser\Parser as Parser;
 use PhpLisp\Exception\EvalException as Exception;
 
+use PhpLisp\Evaluator\ExpressionEvaluator as ExpressionEvaluator;
+
 class Processor {
     private static $operators;
        
@@ -69,16 +71,17 @@ class Processor {
                 }
                 return Debug::t($tree);
             }),
-            "assert" => new Expression("exit", Type::Func, null, function($tree, $node, $scope) {
+            "assert" => new Expression("assert", Type::Func, null, function($tree, $node, $scope) {
                 $left = Evaluator::car($tree, $scope);
                 $right = Evaluator::cdr($tree, $scope);
                 if(Evaluator::evalTree($left) === Evaluator::evalTree($right)) {
-                    return true;
+                    return Expression::$trueInstance;
                 } else {
                     throw new Exception("assert failed!{Evaluator::asString($tree)}");
                 }
             }),
             "exit" => new Expression("exit", Type::Func, null, function($tree, $node, $scope) {
+                Environment::write("exit!");
                 exit();
             }),
             "debug" => new Expression("debug", Type::Func, null, function($tree, $node, $scope) {
@@ -88,34 +91,60 @@ class Processor {
                 return $tree;
             }),
             "+" => new Expression("+", Type::Func, null, function($tree, $node, $scope) {
-                return Evaluator::reduce($tree, function($res, $node, $scope) {
-                    return $res + Evaluator::asNumber($node, $scope);
-                }, 0, $scope);
-            }),
-            "-" => new Expression("-", Type::Func, null, function($tree, $node, $scope) {
+                Debug::$mode = true;
                 return Evaluator::reduce($tree, function($res, $node, $scope) {
                     if(Type::isNull($res)) {
-                        return Evaluator::asNumber($node, $scope);
+                        return $node;
                     }
-                    return $res - Evaluator::asNumber($node, $scope);
+                    return new Expression(Evaluator::asNumber($res, $scope) + Evaluator::asNumber($node, $scope), Type::Scalar);
                 }, null, $scope);
+            }),
+            "-" => new Expression("-", Type::Func, null, function($tree, $node, $scope) {
+                $result = Evaluator::reduce($tree, function($res, $node, $scope) {
+                    if(Type::isNull($res)) {
+                        return $node;
+                    }
+                    return new Expression(Evaluator::asNumber($res, $scope) - Evaluator::asNumber($node, $scope), Type::Scalar);
+                }, null, $scope);
+                return $result;
             }),
             "*" => new Expression("*", Type::Func, null, function($tree, $node, $scope) {
                 return Evaluator::reduce($tree, function($res, $node, $scope) {
-                    return $res * Evaluator::asNumber($node, $scope);
-                }, 1, $scope);
+                    if(Type::isNull($res)) {
+                        return $node;
+                    }
+                    return new Expression(Evaluator::asNumber($res, $scope) * Evaluator::asNumber($node, $scope), Type::Scalar);
+                }, null, $scope);
             }),
             "/" => new Expression("/", Type::Func, null, function($tree, $node, $scope) {
                 //Debug::p($tree);
                 return Evaluator::reduce($tree, function($res, $node, $scope) {
                     if(Type::isNull($res)) {
-                        return Evaluator::asNumber($node, $scope);
+                        return $node;
                     }
-                    return $res / Evaluator::asNumber($node, $scope);
+                    return new Expression(Evaluator::asNumber($res, $scope) / Evaluator::asNumber($node, $scope), Type::Scalar);
                 }, null, $scope);
             }),
             "progn" => new Expression("progn", Type::Func, null, function($tree, $node, $scope) {
                 
+            }),
+            "lambda" => new Expression("lambda", Type::Func, null, function($stack, $node, $scope) {
+                $lambdaHeader = "LAMBDA-CLOSURE () () ()";
+                $lambdaParam = Expression::$nilInstance;
+                $lambdaBody = Expression::$nilInstance;
+                if( !Type::isStack($stack) ) {
+                    if( Type::isNull($stack) ) {
+                        $nodeValue = "(" . $lambdaHeader . ")";
+                    } else {
+                        $nodeValue = "(" . $lambdaHeader . " " . Evaluator::asString($stack) . ")";
+                        $lambdaParam = Stack::fromExpression($stack);
+                    }
+                } else {
+                    $nodeValue = str_ireplace("lambda", $lambdaHeader, Evaluator::asString($node));
+                    $lambdaParam = Stack::fromExpression($stack->shift());
+                    $lambdaBody = $stack;
+                }
+                return new Expression($nodeValue, Type::Lambda, $lambdaParam, $lambdaBody);
             }),
             "defun" => new Expression("defun", Type::Func, null, function ($stack, $node, $scope) {
                 if( !Type::isStack($stack) ) {
@@ -132,20 +161,40 @@ class Processor {
                 $lambdaBody = $stack;
                 $nodeValue = str_ireplace("defun", "LAMBDA-BLOCK", Evaluator::asString($node) );
                 $lambda = new Expression($nodeValue, Type::Lambda, $lambdaParam, $lambdaBody);
-                debug::p($lambda);
                 return Environment::setLambda($scope, Evaluator::asString($symbol), $lambda);
             }),
-            "setf" => new Expression("setf", Type::Func, null, function ($tree, $node, $scope) {
-                if(Type::isScalar($tree)) {
-                    throw new Exception("Error: No value for {Evaluator::asString($tree)}.");
+            "setf" => new Expression("setf", Type::Func, null, function ($stack, $node, $scope) {
+                if(Type::isNull($stack)) {
+                    return Expression::$nilInstance;
+                } else if (Type::isStack($stack)) {
+                    $stackSize = $stack->size();
+                    if($stackSize === 0) {
+                        return Expression::$nilInstance;
+                    }
+                    if(($stackSize % 2) !== 0) {
+                        $lastUnit = $stack->pop();
+                        $stack->push($lastUnit);
+                        $nodeString = Evaluator::asString($lastUnit);
+                        throw new Exception("Error: No value for {$nodeString}.");
+                    }
+                    $offset = 0;
+
+                    while($offset < $stackSize) {
+                        $symbol = $stack->getAt($offset);
+                        $value = $stack->getAt($offset + 1);
+                        if( !Type::isSymbol($symbol) ) {
+                            $nodeString = Evaluator::asString($symbol);
+                            throw new Exception("Error: {$nodeString} is not of type SYMBOL.");
+                        }
+                        $symbolKey = Evaluator::asString($symbol);
+                        $value = Evaluator::tryEvalExpression($value, $scope);
+                        Environment::setSymbol($scope, $symbolKey, $value);
+                        $offset = $offset + 2;
+                    }
+                    return $value;
                 }
-                $symbol = Evaluator::car($tree, $scope);
-                if(!Type::isSymbol($symbol)) {
-                    throw new Exception("Error: {Evaluator::asString($symbol)} is not of type SYMBOL.");
-                }
-                $body = Evaluator::evaluate(Evaluator::cdr($tree, $scope), $scope);
-                $body = Evaluator::tryEvalExpression($body, $scope);
-                return Environment::setSymbol($scope, Evaluator::asString($symbol), $body);
+                $nodeString = Evaluator::asString($stack);
+                throw new Exception("Error: No value for {$nodeString}.");
             }),
             "not" => new Expression("not", Type::Func, "not", function ($tree, $node, $scope) {
                 $tree = Evaluator::tryEvalExpression($tree, $scope);
@@ -164,61 +213,103 @@ class Processor {
                 $tree = Evaluator::tryEvalExpression($tree, $scope);
                 return Type::isQuote($tree) ? Expression::$nilInstance : Expression::$trueInstance;
             }),
-            "eql" => new Expression("eql", Type::Func, null, function ($tree, $node, $scope) {
-                $left = Evaluator::asRaw(Evaluator::tryEvalExpression(Evaluator::car($tree, $scope), $scope));
-                $right = Evaluator::asRaw(Evaluator::tryEvalExpression(Evaluator::car(Evaluator::cdr($tree, $scope), $scope), $scope));
-                return $left === $right ? Expression::$trueInstance : Expression::$nilInstance;
+            "eql" => new Expression("eql", Type::Func, null, function ($stack, $node, $scope) {
+                if(!Type::isStack($stack)) {
+                    if(Type::isNull($stack)) {
+                        throw new Exception("Error: CONS [or a callee] requires more than 0 arguments.");
+                    } else {
+                        throw new Exception("Error: CONS [or a callee] requires more than 1 arguments.");
+                    }
+                }
+                $stackSize = $stack->size();
+                if($stackSize > 2) {
+                    throw new Exception("Error: CONS [or a callee] requires less than {$stackSize} arguments.");
+                }
+                $left = $stack->getAt(0);
+                $right = $stack->getAt(1);
+                $left = Evaluator::tryEvalSymbol($left, $scope);
+                $left = Evaluator::tryEvalExpression($left, $scope);
+                $right = Evaluator::tryEvalExpression($right, $scope);
+                //型チェック
+                if($left->nodeType !== $right->nodeType) {
+                    return Expression::$nilInstance;
+                }
+                //値チェック
+                $left = (string) $left->nodeValue;
+                $right = (string) $right->nodeValue;
+                if($left === $right) {
+                    return Expression::$trueInstance;
+                } else {
+                    return Expression::$nilInstance;
+                }
             }),
             "list" => new Expression("list", Type::Func, null, function ($tree, $node, $scope) {
                 return Environment::write("not yet implemented");
             }),
-            "cons" => new Expression("cons", Type::Func, null, function ($tree, $node, $scope) {
-                $tree = Evaluator::unpackQuote($tree);
-                $left = $tree->leftLeaf;
-                $right = $tree->rightLeaf;
-                if(Type::isExpression($left)) {
-                    $left = Evaluator::quote($left);
-                }
-                $right = Evaluator::tryEvalExpression($right, $scope);
-                if (Type::isQuote($right)) {
-                    $rightValue = Evaluator::asString(Evaluator::unpackQuote($right));
-                    $nodeValue = Evaluator::asString($left) . " ". $rightValue;
-                    $node = new Expression($nodeValue, Type::Expression, $left, $right);
-                } else if (Type::isNull($right)){
-                    $node = $left;
-                } else {
-                    $nodeValue = Evaluator::asString($left) . " . " . Evaluator::asString($right);
-                    $node = new Expression($nodeValue, Type::Cons, $left, $right);
-                }
-                return Evaluator::quote($node);
-            }),
-            "cond" => new Expression("cond", Type::Func, null, function ($tree, $node, $scope) {
-                $res = Expression::$nilInstance;
-                while(!Type::isNull($tree)) {
-                    $left = Evaluator::car($tree, $scope);
-                    $right = Evaluator::cdr($tree, $scope);
-                    $rest = Evaluator::cdr($right, $scope);
-                    if(!Type::isExpression($left) && !Type::isNull($rest)) {
-                        $nodeString = Evaluator::asString($left);
-                        throw new Exception("Error: {$nodeString} is an illegal COND clause.");
-                    }
-                    if(Type::isNull($rest) && Type::isNull($right)) {
-                        $res = $left;
-                        break;
-                    }
-                    if(Type::isSymbol(Evaluator::car($left, $scope))) {
-                        $test = Evaluator::evaluate($left, $scope);
-                        $tmp = Evaluator::car(Evaluator::car($right, $scope), $scope);
-                        $tree = Evaluator::cdr($right, $scope);
+            "cons" => new Expression("cons", Type::Func, null, function ($stack, $node, $scope) {
+                if(!Type::isStack($stack)) {
+                    if(Type::isNull($stack)) {
+                        throw new Exception("Error: CONS [or a callee] requires more than 0 arguments.");
                     } else {
-                        $test = Evaluator::car($left, $scope);
-                        $tmp = Evaluator::car(Evaluator::cdr($left, $scope), $scope);
-                        $tree = $right;
+                        throw new Exception("Error: CONS [or a callee] requires more than 1 arguments.");
                     }
-                    if(Type::isTrue($test)) {
-                        $res = $tmp;
-                        break;
+                }
+                $stackSize = $stack->size();
+                if($stackSize > 2) {
+                    throw new Exception("Error: CONS [or a callee] requires less than {$stackSize} arguments.");
+                }
+                $left = $stack->getAt(0);
+                $right = $stack->getAt(1);
+                $left = Evaluator::tryEvalExpression($left, $scope);
+                $right = Evaluator::tryEvalExpression($right, $scope);
+                if(Type::isExpression($right)) {
+                    $nodeValue = substr_replace(Evaluator::asString($right), "(" . Evaluator::asString($left) . " ", 0, 1);
+                    $cons = new Expression($nodeValue, Type::Expression, $left, Stack::fromExpression($right));
+                } else if(Type::isNull($right)) {
+                    $nodeValue = "(" . Evaluator::asString($left) . ")";
+                    $cons = new Expression($nodeValue, Type::Cons, $left, $right);                    
+                } else {
+                    $nodeValue = "(" . Evaluator::asString($left) . " . " . Evaluator::asString($right) . ")";
+                    $cons = new Expression($nodeValue, Type::Cons, $left, $right);
+                }
+                return $cons;
+            }),
+            "cond" => new Expression("cond", Type::Func, null, function ($stack, $node, $scope) {
+                $res = Expression::$nilInstance;
+                if( !Type::isStack($stack) ) {
+                    if(Type::isNull($stack)) {
+                        return $res;
                     }
+                    $tmp = new Stack;
+                    $tmp->push($stack);
+                    $stack = $tmp;
+                }
+                $stackSize = $stack->size();
+                $offset = 0;
+                while($offset < $stackSize) {
+                    $unit = $stack->getAt($offset);
+                    $offset = $offset + 1;
+                    $left = $unit->leftLeaf;
+                    $right = $unit->rightLeaf;
+                    
+                    if(Type::isExpression($left)) {
+                        $left = ExpressionEvaluator::evaluate($left, $scope);
+                    }
+                    if(Type::isNull($left)) {
+                        continue;
+                    }
+                    if(Type::isNull($right)) {
+                        if( Type::isCons($unit) ) {
+                            $res = $left;
+                        } else {
+                            $res = $right;
+                        }
+                    } else if(Type::isExpression($right)) {
+                        $res = ExpressionEvaluator::evaluate($right, $scope);
+                    } else {
+                        $res = $right;
+                    }
+                    break;
                 }
                 return $res;
             })

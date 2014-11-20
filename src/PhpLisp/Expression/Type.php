@@ -39,6 +39,13 @@ class Type {
         return $node->nodeType === self::Symbol;
     }
 
+    public static function isCons ($node) {
+        if(!self::isLispExpression($node)) {
+            return false;
+        }
+        return $node->nodeType === self::Cons;
+    }
+
     public static function isList ($node) {
         if(!self::isLispExpression($node)) {
             return false;

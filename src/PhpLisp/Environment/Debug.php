@@ -6,7 +6,7 @@ use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Exception\EvalException as Exception;
 
 class Debug {
-    public static $mode = true;
+    public static $mode = false;
     public static $limit = null;
     
     //dump expression
