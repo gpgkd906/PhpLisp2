@@ -10,7 +10,7 @@ class Debug {
     public static $limit = null;
     
     //dump expression
-    public function d ($expression) {
+    public static function d ($expression) {
         if(self::$mode === false) {
             return false;
         }
@@ -27,7 +27,7 @@ class Debug {
     }
 
     //print_r and stop
-    public function p () {
+    public static function p () {
         if(self::$mode === false) {
             return false;
         }
@@ -42,7 +42,7 @@ class Debug {
     }
 
     //print_r and through out
-    public function t () {
+    public static function t () {
         if(self::$mode === false) {
             return false;
         }
