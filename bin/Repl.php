@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-require "../vendor/autoload.php";
+require dirname(__FILE__) . "/../vendor/autoload.php";
 
 use PhpLisp\PhpLisp as PhpLisp;
 use PhpLisp\Environment\Debug as Debug;
