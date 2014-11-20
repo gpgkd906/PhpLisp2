@@ -93,7 +93,7 @@ class Evaluator extends AbstractEvaluator {
         return new Expression($quoteValue, Type::Quote);
     }
 
-    public function asNumber($node, $scope) {
+    public static function asNumber($node, $scope) {
         if( Type::isExpression($node) ) {
             $node = ExpressionEvaluator::evaluate($node, $scope);
             return self::asNumber($node, $scope);
