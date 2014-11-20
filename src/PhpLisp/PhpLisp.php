@@ -69,10 +69,8 @@ class PhpLisp {
      * コンパイラーインタフェース
      * 未実装
      */
-    public static function compile () {
-
-    }
- 
+    public static function compile () {}
+    
     public static function read () {
         return Environment::read();
     }

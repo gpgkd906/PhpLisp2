@@ -41,24 +41,21 @@ class Processor {
                 fclose($resource);
                 return Expression::$trueInstance;
             }),
-            "read-line" => new Expression("read-line", Type::Func, null, function($tree, $node, $scope) {
-                $tree = Evaluator::tryEvalExpression($tree, $scope);
-                $resource = Evaluator::asRaw(Evaluator::evaluate($tree, $scope));
-                if(!is_resource($resource)) {
-                    throw new Exception("Error: {$symbol} is invalid resource.");                    
-                }
-                $line = fgets($resource);
-                if(feof($resource)) {
-                    return Expression::$nilInstance;
-                } else {
-                    return new Expression($line, Type::Scalar);
-                }
+            "print" => new Expression("print", Type::Func, null, function($tree, $node, $scope) {
+
             }),
             "help" => new Expression("help", Type::Func, null, function($tree, $node, $scope) {
-                //マグロシステム実装するまで，lisp上while/loopを使えない
-                //なので，ここはとにかくPHPの実装にする
+                if(!$file = stream_resolve_include_path("../src/PhpLisp/doc/HELP")) {
+                    if(!$file = stream_resolve_include_path("src/PhpLisp/doc/HELP")) {
+                        if(!$file = stream_resolve_include_path("PhpLisp/doc/HELP")) {
+                            if(!$file = stream_resolve_include_path("doc/HELP")) {
+                                throw new Exception("document file missed!");
+                            }
+                        }
+                    }
+                }
                 Environment::write(Environment::$eol);
-                Environment::write(file_get_contents("doc/HELP"));
+                Environment::write(file_get_contents($file));
                 Environment::write(Environment::$eol);
             }),
             "dump" => new Expression("dump", Type::Func, null, function($tree, $node, $scope) {
@@ -117,7 +114,6 @@ class Processor {
                 }, null, $scope);
             }),
             "/" => new Expression("/", Type::Func, null, function($tree, $node, $scope) {
-                //Debug::p($tree);
                 return Evaluator::reduce($tree, function($res, $node, $scope) {
                     if(Type::isNull($res)) {
                         return $node;
@@ -262,7 +258,7 @@ class Processor {
                 $right = $stack->getAt(1);
                 $left = Evaluator::tryEvalExpression($left, $scope);
                 $right = Evaluator::tryEvalExpression($right, $scope);
-                if(Type::isExpression($right)) {
+                if(Type::isExpression($right) || Type::isCons($right)) {
                     $nodeValue = substr_replace(Evaluator::asString($right), "(" . Evaluator::asString($left) . " ", 0, 1);
                     $cons = new Expression($nodeValue, Type::Expression, $left, Stack::fromExpression($right));
                 } else if(Type::isNull($right)) {

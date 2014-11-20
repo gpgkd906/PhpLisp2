@@ -3,15 +3,18 @@
   希望你玩的开心。
   你可以使用(debug t/nil)命令来打开/关闭debug模式
   在debug模式下，你可以直接使用(dump obj)命令来打印任何对象的内部结构。比如(dump nil), 试试看？
+  REPL对话环境下debug模式默认为打开
   
   Welcome to PhpLisp。
   this is a toy project, it is not completion.but you can do what you want, to break the Interpreter, or test it。
   just have fun!
-  use (debug t/nil) to on/off debug mode
+  use (debug t/nil) to on/off debug-mode
   with debug mode, you can dump any object with (dump obj), try it?
+  default, debug-mode is set to be on with REPL
 
   ようこそ、PhpLispへ. 
   これはおもちゃプロジェクトであり、また完成していません。どんなことしても構いません、インタプリタを壊してもいいし、テストだけでもいい。
   楽しんでください。
   (debug t/nil)でデバグモードを切り替えます
   デバグモードが有効の場合，(dump obj)でオブジェクトの内部構造が表示される、やってみませんか?
+  REPL会話モードでは、デバグモードがデフォールトで有効になっている。

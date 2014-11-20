@@ -15,6 +15,8 @@ class Evaluator extends AbstractEvaluator {
     public static function evalTree($ast, $scope) {
         if(Type::isExpression($ast)) {
             return self::evaluate($ast, $scope);
+        } else if(Type::isCons($ast)) {
+            return self::evaluate($ast, $scope);
         } else if(Type::isSymbol($ast)) {
             return self::evaluate($ast, $scope);
         }
@@ -134,11 +136,9 @@ class Evaluator extends AbstractEvaluator {
             break;
         case Type::Expression:
             return ExpressionEvaluator::evaluate($tree, $scope);
-            //return self::evalExpression($tree, $scope);
             break;
         case Type::Cons:
-            Debug::t($tree);
-            return "not yet implemented: self::evaluate[Cons]";
+            return ExpressionEvaluator::evaluate($tree, $scope);
             break;
         case Type::Nil:
             return Expression::$nilInstance;
