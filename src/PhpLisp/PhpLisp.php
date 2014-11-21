@@ -21,16 +21,16 @@ class PhpLisp {
      */
     public static function repl () {
         try {
-            self::write("PhpLisp:>");
-            while($input = self::read()) {
+            while($input = self::readline("PhpLisp:>")) {
+                if( $input === "exit") {
+                    break;
+                }
                 while(!$ast = Parser::read($input)) {
-                    self::write("PhpLisp:>");
-                    $input = self::read();
+                    $input = self::readline("PhpLisp:>");
                 }
                 $result = Evaluator::evalTree($ast, Environment::$rootScope);
                 self::write($result);
                 self::write(Environment::$eol);
-                self::write("PhpLisp:>");
             }
             echo PHP_EOL;
         } catch (Exception $e) {
@@ -71,10 +71,19 @@ class PhpLisp {
      */
     public static function compile () {}
     
+    public static function readline($prompt) {
+        if(extension_loaded('readline')) {
+            return readline($prompt);
+        } else {
+            self::write($prompt);
+            return self::read();
+        }
+    }
+
     public static function read () {
         return Environment::read();
     }
-
+    
     public static function write ($output) {
         return Environment::write($output);
     }
