@@ -9,10 +9,22 @@ use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Expression\Type as Type;
 use PhpLisp\Exception\ParseException as Exception;
 
-class Deform {
-    
+/**
+ * parse段階でのPHPによる構文木変換
+ */
+class Transform {
+
+    public static function translate ($node, $sentence, $sentence_left, $sentence_right) {
+        $node = self::cons($node, $sentence_right);
+
+        return $node;
+    }
+
     //cons変換
-    public static function cons ($node) {
+    public static function cons ($node, $sentence_right) {
+        if(!isset($sentence_right[0])) {
+            $node->setType(Type::Cons);
+        }
         $left = $node->leftLeaf;
         $right = $node->rightLeaf;
         if(Type::isSymbol($right) && $right->nodeValue === ".") {

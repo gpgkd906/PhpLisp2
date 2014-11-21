@@ -9,6 +9,9 @@ use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Expression\Type as Type;
 use PhpLisp\Exception\ParseException as Exception;
 
+/**
+ * parse段階でのlisp自分自身による構文木変換
+ */
 class Macro {
     public static $macroTable;
     

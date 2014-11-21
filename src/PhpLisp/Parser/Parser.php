@@ -36,7 +36,8 @@ class Parser {
     }
 
     public static function quote ($node) {
-        Environment::write("is it really need to quote something in parse time? think about it!");
+        Environment::write("is it really need to quote something in parse-time? think about it!");
+        Environment::write(Environment::$eol);
         $nodeValue = "(quote " . $node->nodeValue . ")";
         return new Expression($nodeValue, Type::Expression, Parser::read("quote"), $node);
     }
@@ -45,8 +46,7 @@ class Parser {
         //token解析しやすいため，括弧周りに空白を追加する
         $sentence = self::addDummySpace($sentence);
         $sentence = trim($sentence);
-        //空白でtoken分解する、ここはReaderが正規化を保証してくれると仮定するので、再正規化を行わない
-        //Readerの正規化にも重複な空白は取り除いたので，そのまま分解する        
+        //空白でtoken分解する、Readerが既に正規化を保証してくれるので、再正規化を行わない
         $tokens = explode(" ", $sentence);
         $deep = 0;
         $open = $close = null;
@@ -77,7 +77,7 @@ class Parser {
         }
         $left_repl = self::removeDummySpace(join(" ", $left));
         $right_repl = self::removeDummySpace(join(" ", $tokens));
-        return array($left_repl, $right_repl);
+        return array($left_repl, $right_repl, $left, $tokens);
     }
     
     public static function addDummySpace ($sentence) {
@@ -133,13 +133,10 @@ class Parser {
         $node->rawValue = $raw;
         switch($type) {
         case Type::Expression:
-            list($sentence_left, $sentence_right) = self::separate($sentence);
+            list($sentence_left, $sentence_right, $tokens_left, $tokens_right) = self::separate($sentence);
             $node->leftLeaf = self::read($sentence_left);
             $node->rightLeaf = self::read($sentence_right) ?: Expression::$nilInstance;
-            if(!isset($sentence_right[0])) {
-                $node->setType(Type::Cons);
-            }
-            $node = Deform::cons($node);
+            $node = Transform::translate($node, $sentence, $sentence_left, $sentence_right);
             $node = Macro::deform($node, $sentence, $sentence_left, $sentence_right);
             break;
         }
