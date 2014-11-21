@@ -3,6 +3,7 @@
 namespace PhpLisp\Parser;
 
 use PhpLisp\Environment\Debug as Debug;
+use PhpLisp\Environment\Environment as Environment;
 use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Evaluator\Evaluator as Evaluator;
 use PhpLisp\Expression\Type as Type;
@@ -32,6 +33,12 @@ class Parser {
 
     public static function warpSentence ($sentence) {
         return "(" . $sentence . ")";
+    }
+
+    public static function quote ($node) {
+        Environment::write("is it really need to quote something in parse time? think about it!");
+        $nodeValue = "(quote " . $node->nodeValue . ")";
+        return new Expression($nodeValue, Type::Expression, Parser::read("quote"), $node);
     }
 
     public static function separate ($sentence) {
@@ -132,6 +139,8 @@ class Parser {
             if(!isset($sentence_right[0])) {
                 $node->setType(Type::Cons);
             }
+            $node = Deform::cons($node);
+            $node = Macro::deform($node, $sentence, $sentence_left, $sentence_right);
             break;
         }
         return $node;

@@ -73,7 +73,11 @@ class PhpLisp {
     
     public static function readline($prompt) {
         if(extension_loaded('readline')) {
-            return readline($prompt);
+            $input = readline($prompt);
+            if(isset($input[0])) {
+                readline_add_history($input);
+            }
+            return $input;
         } else {
             self::write($prompt);
             return self::read();

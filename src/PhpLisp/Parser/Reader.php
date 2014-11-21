@@ -37,9 +37,14 @@ class Reader {
      * @link
      */
     public static function isNilSentence ($sentence) {
+        $sentence = str_replace(" ", "", $sentence);
+        //nil
         $isNil = (strtoupper($sentence) === strtoupper(Expression::$nilInstance->nodeValue));
-        $isEmpty = (str_replace(" ", "", $sentence) === "()");
-        return $isNil || $isEmpty;
+        //()
+        $isEmpty = ($sentence === "()");
+        //'()
+        $isQuoteEmpty = ($sentence === "'()");
+        return $isNil || $isEmpty || $isQuoteEmpty;
     }
 
     /**
@@ -74,9 +79,10 @@ class Reader {
     /**
      * 格式上有効なS式のチェック
      * ここは格式上のチェックであるので，論理チェックではありません
-     *  ※成功例: '(1 2 3)、論理上有効であるし、格式上有効である
-     *  ※成功例: (1 2 3)、論理上有効ではないが、格式上有効である
-     *  ※失敗例: 1 2 3、論理上有効ではないし、格式上有効でもない
+     * 論理上S式が有効であるかどかは実行時でないと分からない
+     *  ※成功例: '(1 2 3)          論理上有効であるし、格式上有効である
+     *  ※成功例: (1 2 3)　         論理上有効ではないが、格式上有効である
+     *  ※失敗例: 1 2 3             論理上有効ではないし、格式上有効でもない
      *  ※失敗例: (1 2) (3 4) (5 6) 論理上有効ではないし、格式上有効でもない
      * @api
      * @param string $sentence
@@ -215,54 +221,48 @@ class Reader {
         $input = self::trimMultiComment($input);
         //重複な空白を取り除く
         $input = Parser::removeDummySpace($input);
-        //有効なreplであるかどかチェックする
+        //有効なsentenceであるかどかチェックする
         $input = self::checkSentence($input);
-        //有効なreplでなければ次の行を読む
+        //有効なsentenceでなければ次の行を読む
         if($input === false) {
             return array(false, false, false);
         }
-        //replを正規化する、例えば'a' b => 'a 'bとか, ※macro処理もここで実装予定
-        $sentence = self::deform($input);
+        //sentenceを正規化する、例えば'a' b => 'a 'bとか
+        $sentence = self::normalize($input);
         //正規化による無駄な空白を取り除く
         $sentence = Parser::removeDummySpace($sentence);
         //パタンマッチ　※lispでは文法がないので、ここも極めてシンプルになる
         switch(true) {
-        case (bool) self::isExpressionSentence($sentence):
             //S式
+        case self::isExpressionSentence($sentence):
             $result = array($sentence, Type::Expression, $input);
             break;
+            //nil構文
+        case self::isNilSentence($sentence):
+            $result = array($sentence, Type::Nil, $input);
+            break;
+            //T構文(true)
+        case self::isTrueSentence($sentence):
+            $result = array($sentence, Type::True, $input);
+            break;
+            //scalar構文
+        case self::isScalarSentence($sentence):
+            $result = array($sentence, Type::Scalar, $input);
+            break;
+            //Symbol構文
+        case self::isSymbolSentence($sentence):
+            $result = array($sentence, Type::Symbol, $input);
+            break;
+            //複数構文(関数のパラメタ)
         default:
-            //スカラーデータ
-            if (self::isNilSentence($sentence)) {
-                $result = array($sentence, Type::Nil, $input);
-            } else if (self::isTrueSentence($sentence)) {
-                $result = array($sentence, Type::True, $input);
-            } else if (self::isScalarSentence($sentence)) {
-                $result = array($sentence, Type::Scalar, $input);
-            } else if (self::isSymbolSentence($sentence)) {
-                $result = array($sentence, Type::Symbol, $input);
-            } else {
-                $result = array($sentence, Parser::Group, $input);
-            }
+            $result = array($sentence, Parser::Group, $input);
             break;
         }
+        //一つのsentenceを構成できれば、溜めてた行を全て解放する
         self::clearSentence();
         return $result;
     }
 
-    /**
-     * 
-     * @api
-     * @param string $sentence
-     * @return bool
-     * @link
-     */
-    public static function deform ($sentence) {
-        //処理前に正規化する
-        $sentence = self::normalize ($sentence);
-        return self::deformQuote($sentence);
-    }
-    
     /**
      * S式を正規化
      * @api
@@ -279,12 +279,13 @@ class Reader {
         $sentence = str_replace("'", " '", $sentence);
         //: 'a  'b => 'a 'b (重複な空白を取り除く)
         $sentence = Parser::removeDummySpace($sentence);
-        return $sentence;
+        //quote展開、将来はmacroに移す予定
+        return self::deformQuote($sentence);
     }
     
-    //Macro: Quoteを展開する
-    //現在はまずPHP関数で展開させるが、Macroシステムを実装できる次第、Macroで書き直す
     /**
+     * Quoteを展開する
+     * 現在はまずPHP関数で展開させるが、Macroシステムを実装できる次第、Macroで書き直す
      * 
      * @api
      * @param string $sentence
@@ -358,7 +359,7 @@ class Reader {
     // ※ 失敗例：")("が有効なS式ではないし、有効なreplでもないので
     public static function checkSentence ($input) {
         //1、$inputが空白では次の行を読む
-        if(strlen($input) === 0) {
+        if( !isset($input[0]) ) {
             return false;
         }
         $firstLeft = strpos($input, "(");
@@ -367,8 +368,9 @@ class Reader {
         if( $firstLeft === false && $firstRight !== false ) {
             throw new Exception("invalid S-expression, Invalid read syntax: ')'");
         }
-        //2、) が ( よりも先にあってはいけません(Error) ※両方ともにない場合は0に変換される
-        //暗黙の型変換も明示的に型変換と同じですが、明示的に型変換する方が意図を読み取れやすい
+        //2、) が ( よりも先にあってはいけません(Error) 
+        // 両方ともにない場合は0に変換される
+        // 暗黙の型変換も明示的に型変換と同じですが、明示的に型変換する方が意図を読み取れやすい
         if( (int) $firstLeft > (int) $firstRight) {
             throw new Exception("invalid S-expression, Invalid read syntax: ')'");
         }
@@ -382,7 +384,7 @@ class Reader {
         if($countLeft > $countRight) {
             return false;
         }
-        //5、" ( ) "が存在するし、かつ ( と ) が同じ数のであれば、まずは有効なreplとして成り立つ
+        //5、" ( ) "が存在するし、かつ ( と ) が同じ数のであれば、まずは有効なsentenceとして成り立つ
         return $input;
     }
     

@@ -10,7 +10,7 @@ abstract class AbstractEvaluator implements EvaluatorInterface {
     
     public static function asString ($node) {
         if(Type::isLispExpression($node)) {
-            $raw = $node->rawValue;
+            $raw = $node->nodeValue;
         } else {
             $raw = $node;
         }
