@@ -134,7 +134,7 @@ class Parser {
             $node->leftLeaf = self::read($sentence_left);
             $node->rightLeaf = self::read($sentence_right) ?: Expression::$nilInstance;
             $node = Transform::translate($node, $sentence, $sentence_left, $sentence_right);
-            $node = Macro::deform($node, $sentence, $sentence_left, $sentence_right);
+            $node = Macro::expand($node);
             break;
         }
         return $node;

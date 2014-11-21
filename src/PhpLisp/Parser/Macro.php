@@ -39,7 +39,7 @@ class Macro {
         self::$macroTable->set($symbol, $macro);
     }
 
-    public static function deform ($node, $sentence, $sentence_left, $sentence_right) {
+    public static function expand ($node) {
         $left = $node->leftLeaf;
         $right = $node->rightLeaf;
         if(Type::isSymbol($left)) {
@@ -50,7 +50,8 @@ class Macro {
             }
             if($macro = self::getMacro($left->nodeValue)) {
                 $name = $left->nodeValue;
-                return $result = LambdaEvaluator::apply($macro, $right, $name, self::$scope);
+                $result = LambdaEvaluator::apply($macro, $right, $name, self::$scope);
+                return self::expand($result);
             }
         }
         return $node;
