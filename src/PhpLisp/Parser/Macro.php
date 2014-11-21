@@ -3,10 +3,12 @@
 namespace PhpLisp\Parser;
 
 use PhpLisp\Environment\Debug as Debug;
-use PhpLisp\Evalutor\Evaluator as Evaluator;
+use PhpLisp\Evaluator\Evaluator as Evaluator;
+use PhpLisp\Evaluator\LambdaEvaluator as LambdaEvaluator;
 use PhpLisp\Environment\SymbolTable as SymbolTable;
 use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Expression\Type as Type;
+use PhpLisp\Expression\Stack as Stack;
 use PhpLisp\Exception\ParseException as Exception;
 
 /**
@@ -14,31 +16,44 @@ use PhpLisp\Exception\ParseException as Exception;
  */
 class Macro {
     public static $macroTable;
+    public static $scope = "macro";
     
     public static function initialization() {
         self::$macroTable = new SymbolTable;
     }
 
-    public static function isMacro () {
-        
+    public static function getMacro ($symbol) {
+        return self::$macroTable->get($symbol);
     }
 
-    public static function def () {
-        
-    }
-
-    public static function isDefined ($symbol) {
-        
-    }
-
-    public static function quote ($node) {
-        $nodeValue = "(quote " . $node->nodeValue . ")";
-        return new Expression($nodeValue, Type::Expression, Parser::read("quote"), $node);
+    public static function define ($stack) {
+        if(!Type::isStack($stack)) {
+            throw new Exception("[DEFMACRO] Error: Too few arguments.");
+        }
+        if($stack->size() < 3) {
+            throw new Exception("[DEFMACRO] Error: Too few arguments.");
+        }
+        $symbol = $stack->shift()->nodeValue;
+        $param = Stack::fromExpression($stack->shift());
+        $macro = new Expression("MACRO", Type::Lambda, $param, $stack);
+        Debug::p($macro);
+        self::$macroTable->set($symbol, $macro);
     }
 
     public static function deform ($node, $sentence, $sentence_left, $sentence_right) {
         $left = $node->leftLeaf;
         $right = $node->rightLeaf;
+        if(Type::isSymbol($left)) {
+            if(Evaluator::asString($left) === "DEFMACRO") { 
+                self::define($right);
+                return null;
+            }
+            if($macro = self::getMacro($left->nodeValue)) {
+                $name = $left->nodeValue;
+                $result = LambdaEvaluator::apply($macro, $right, $name, self::$scope);
+                Debug::p($result);
+            }
+        }
         return $node;
         //Debug::p($right->nodeValue === ".", $sentence);
     }

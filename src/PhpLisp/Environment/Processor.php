@@ -4,13 +4,13 @@ namespace PhpLisp\Environment;
 
 use PhpLisp\Environment\Debug as Debug;
 use PhpLisp\Evaluator\Evaluator as Evaluator;
+use PhpLisp\Evaluator\ExpressionEvaluator as ExpressionEvaluator;
+use PhpLisp\Evaluator\SymbolEvaluator as SymbolEvaluator;
 use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Expression\Type as Type;
 use PhpLisp\Expression\Stack as Stack;
 use PhpLisp\Parser\Parser as Parser;
 use PhpLisp\Exception\EvalException as Exception;
-
-use PhpLisp\Evaluator\ExpressionEvaluator as ExpressionEvaluator;
 
 class Processor {
     private static $operators;
@@ -240,7 +240,20 @@ class Processor {
                 }
             }),
             "list" => new Expression("list", Type::Func, null, function ($tree, $node, $scope) {
-                return Environment::write("not yet implemented");
+                if(Type::isStack($tree)) {
+                    $size = $tree->size();
+                    while($size --> 0) {
+                        $unit = $tree->shift();
+                        if(Type::isExpression($unit)) {
+                            $unit = ExpressionEvaluator::evaluate($unit, $scope);
+                        } else if(Type::isSymbol($unit)) {
+                            $unit = SymbolEvaluator::evaluate($unit, $scope);                            
+                        }
+                        $tree->push($unit);
+                    }
+                    $tree = $tree->toExpression();
+                }
+                return $tree;
             }),
             "cons" => new Expression("cons", Type::Func, null, function ($stack, $node, $scope) {
                 if(!Type::isStack($stack)) {
