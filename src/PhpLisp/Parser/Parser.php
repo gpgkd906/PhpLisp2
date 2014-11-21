@@ -119,6 +119,7 @@ class Parser {
                     $sentence = "";
                 }
             } while (isset($sentence[0]));
+            $stack = Transform::translateStack($stack);
             return $stack;
         }
         if($type === Type::Nil) {
@@ -133,8 +134,11 @@ class Parser {
             list($sentence_left, $sentence_right, $tokens_left, $tokens_right) = self::separate($sentence);
             $node->leftLeaf = self::read($sentence_left);
             $node->rightLeaf = self::read($sentence_right) ?: Expression::$nilInstance;
-            $node = Transform::translate($node, $sentence, $sentence_left, $sentence_right);
+            $node = Transform::translateExpression($node, $sentence, $sentence_left, $sentence_right);
             $node = Macro::expand($node);
+            break;
+        default:
+            $node = Transform::translate($node, $sentence);
             break;
         }
         return $node;

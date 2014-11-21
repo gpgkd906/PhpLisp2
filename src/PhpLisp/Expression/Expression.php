@@ -18,8 +18,7 @@ class Expression {
     
     public function __construct($rawValue = null, $nodeType = null, $leftLeaf = null, $rightLeaf = null) {
         if(isset($rawValue)) {
-            $this->nodeValue = $rawValue;
-            $this->rawValue = $rawValue;
+            $this->setValue($rawValue);
         }
         if(isset($nodeType)) {
             $this->setType($nodeType);
@@ -35,5 +34,10 @@ class Expression {
     public function setType($nodeType) {
         $this->nodeType = $nodeType;
         $this->nodeTypeLabel = Type::$typeTable[$nodeType];        
+    }
+
+    public function setValue($rawValue) {
+        $this->nodeValue = $rawValue;
+        $this->rawValue = $rawValue;
     }
 }
