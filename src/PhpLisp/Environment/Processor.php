@@ -251,9 +251,14 @@ class Processor {
                         }
                         $tree->push($unit);
                     }
-                    $tree = $tree->toExpression();
+                    return $tree->toExpression();
+                } else if(Type::isExpression($tree) ) {
+                    $tree = ExpressionEvaluator::evaluate($tree, $scope);
+                } else if(Type::isSymbol($tree) ) {
+                    $tree = SymbolEvaluator::evaluate($tree, $scope);
                 }
-                return $tree;
+                $nodeValue = "(" . $tree->nodeValue . ")";
+                return new Expression($nodeValue, Type::Cons, $tree, Expression::$nilInstance);
             }),
             "cons" => new Expression("cons", Type::Func, null, function ($stack, $node, $scope) {
                 if(!Type::isStack($stack)) {
@@ -276,7 +281,7 @@ class Processor {
                     $cons = new Expression($nodeValue, Type::Expression, $left, Stack::fromExpression($right));
                 } else if(Type::isNull($right)) {
                     $nodeValue = "(" . Evaluator::asString($left) . ")";
-                    $cons = new Expression($nodeValue, Type::Cons, $left, $right);                    
+                    $cons = new Expression($nodeValue, Type::Cons, $left, $right);
                 } else {
                     $nodeValue = "(" . Evaluator::asString($left) . " . " . Evaluator::asString($right) . ")";
                     $cons = new Expression($nodeValue, Type::Cons, $left, $right);

@@ -13,6 +13,7 @@ use PhpLisp\Environment\Debug as Debug;
 class Evaluator extends AbstractEvaluator {
 
     public static function evalTree($ast, $scope) {
+        //Debug::p($ast);
         if(Type::isExpression($ast)) {
             return self::evaluate($ast, $scope);
         } else if(Type::isCons($ast)) {
