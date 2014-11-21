@@ -124,9 +124,6 @@ class Parser {
         if($type === Type::Nil) {
             return Expression::$nilInstance;
         }
-        if($sentence !== "0" && empty($sentence)) {
-            return Expression::$nilInstance;
-        }
         $node = new Expression;
         $node->setType($type);
         $node->nodeValue = $sentence;

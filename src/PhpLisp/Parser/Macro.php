@@ -45,6 +45,7 @@ class Macro {
         if(Type::isSymbol($left)) {
             if(Evaluator::asString($left) === "DEFMACRO") { 
                 self::define($right);
+                //return nullはつまり構文木からこのノードを削除すること
                 return null;
             }
             if($macro = self::getMacro($left->nodeValue)) {
