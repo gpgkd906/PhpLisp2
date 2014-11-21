@@ -57,7 +57,7 @@ class Environment {
 
     public static function getSymbol($scope, $symbol) {
         if(!$symbolTable = self::$symbolTable->get($scope)) {
-            return false;
+            return null;
         }
         if(($target = $symbolTable->get($symbol)) === null) {
             return null;
