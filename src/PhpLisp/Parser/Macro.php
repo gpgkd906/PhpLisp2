@@ -36,7 +36,6 @@ class Macro {
         $symbol = $stack->shift()->nodeValue;
         $param = Stack::fromExpression($stack->shift());
         $macro = new Expression("MACRO", Type::Lambda, $param, $stack);
-        Debug::p($macro);
         self::$macroTable->set($symbol, $macro);
     }
 
@@ -50,11 +49,9 @@ class Macro {
             }
             if($macro = self::getMacro($left->nodeValue)) {
                 $name = $left->nodeValue;
-                $result = LambdaEvaluator::apply($macro, $right, $name, self::$scope);
-                Debug::p($result);
+                return $result = LambdaEvaluator::apply($macro, $right, $name, self::$scope);
             }
         }
         return $node;
-        //Debug::p($right->nodeValue === ".", $sentence);
     }
 }
