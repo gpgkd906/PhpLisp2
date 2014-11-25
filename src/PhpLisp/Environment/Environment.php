@@ -60,7 +60,10 @@ class Environment {
 
     public static function getSymbol($scope, $symbol) {
         if(!$symbolTable = self::$symbolTable->get($scope)) {
-            $symbolTable = self::$symbolTable->get(self::$rootScope);
+            if(!$symbolTable = self::$symbolTable->get(self::$rootScope)) {
+                $symbolTable = new SymbolTable;
+                self::$symbolTable->set(self::$rootScope, $symbolTable);
+            }
         }
         if(($target = $symbolTable->get($symbol)) === null) {
             return null;
@@ -86,7 +89,10 @@ class Environment {
 
     public static function getLambda($scope, $symbol) {
         if(!$symbolTable = self::$lambdaTable->get($scope)) {
-            $symbolTable = self::$lambdaTable->get(self::$rootScope);
+            if(!$symbolTable = self::$lambdaTable->get(self::$rootScope)) {
+                $symbolTable = new SymbolTable;
+                self::$lambdaTable->set(self::$rootScope, $symbolTable);                
+            }
         }
         if(($target = $symbolTable->get($symbol)) === null) {
             return null;
