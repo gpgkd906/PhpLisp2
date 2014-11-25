@@ -72,6 +72,8 @@ class Stack {
         $left = $this->shift();
         if($this->size() > 1) {
             $node = new Expression($values, Type::Expression, $left, $this);
+        } else if($this->size() === 0) {
+            $node = $left;
         } else {
             $right = $this->pop();
             $node = new Expression($values, Type::Expression, $left, $right);

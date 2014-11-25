@@ -3,7 +3,7 @@
 namespace PhpLisp\Parser;
 
 use PhpLisp\Environment\Debug as Debug;
-use PhpLisp\Evalutor\Evaluator as Evaluator;
+use PhpLisp\Evaluator\Evaluator as Evaluator;
 use PhpLisp\Environment\SymbolTable as SymbolTable;
 use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Expression\Type as Type;
@@ -15,7 +15,9 @@ use PhpLisp\Exception\ParseException as Exception;
  */
 class Transform {
     
-    public static $special = array("'" => "quote", "#'" => "transformFunction", "`" => "transformBackQuote", "," => "transformExpand", "@" => "transformExpandList");
+    public static $scope = "transform";
+    
+    public static $special = array("'" => "quote", "`" => "transformBackQuote", "#'" => "getLambda", "," => "transformExpand", "@" => "transformExpandList");
     
     public static function translate ($node, $sentence, $sentence_left, $sentence_right) {
         $node = self::cons($node, $sentence_right);
@@ -31,14 +33,26 @@ class Transform {
         if(Type::isSymbol($right)) {
             $node->setValue("(quote " . $right->nodeValue . ")");
             $node->leftLeaf = Parser::read("quote");
-            Debug::p($node);
         } else if(Type::isLispExpression($right)) {
             $stack = Stack::fromExpression($right);
-            
-            Debug::p($stack);
+            $size = $stack->size();
+            if($size === 1) {
+                $node = new Expression("(quote " . $right->nodeValue . ")", Type::Expression, Parser::read("quote"), $right);
+            } else {
+                $stack = Evaluator::map($stack, function($node, $scope) {
+                    if(Type::isSymbol($node)) {
+                        $node = new Expression("(quote " . $node->nodeValue . ")", Type::Expression, Parser::read("quote"), $node);
+                    }
+                    return $node;
+                }, self::$scope);
+                $values = array("(list");
+                for($offset = 0; $offset < $size; $offset++) {
+                    $values[] = $stack->getAt($offset)->nodeValue;
+                }
+                $nodeValue = join(" ", $values) . ")";
+                $node = new Expression($nodeValue, Type::Expression, Parser::read("list"), $stack);
+            }
         }
-
-        Debug::p($right);
         return $node;
     }
 
