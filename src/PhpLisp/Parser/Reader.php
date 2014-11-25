@@ -294,79 +294,8 @@ class Reader {
             }
         }
         return $sentence;
-        //quote展開、将来はmacroに移す予定
-        return self::deformQuote($sentence);
     }
     
-    /**
-     * Quoteを展開する
-     * 現在はまずPHP関数で展開させるが、Macroシステムを実装できる次第、Macroで書き直す
-     * 
-     * @api
-     * @param string $sentence
-     * @return bool
-     * @link
-     */
-    public static function deformQuote ($sentence) {
-        if(substr_count($sentence, "'") === 0) {
-            return $sentence;
-        }
-        if(substr($sentence, -1) === "'") {
-            throw new Exception("invalid S-expression, More than one S-exp in input!");
-        }
-        if(substr($sentence, -2) === "')") {
-            throw new Exception("invalid S-expression, More than one S-exp in input!");
-        }
-        //ここから、一つ一つ交換していく
-        $offset = 0;
-        $length = strlen($sentence);
-        $stack = null;
-        $beginOffset = $endOffset = null;
-        $findQuote = false;
-        while(($offset = strpos($sentence, "'")) !== false) {
-            $findQuote = true;
-            $stack = 0;
-            $beginOffset = $offset;
-            do {
-                $char = $sentence[$offset];
-                //括弧を見つかったら計上する
-                if($char === "(") {
-                    $stack = $stack + 1;
-                }
-                if($char === ")") {
-                    $stack = $stack - 1;
-                    if($stack < 1 && $findQuote) {
-                        $endOffset = $offset;
-                        //replace '... => (quote ...)
-                        $sentence = substr_replace($sentence, "))", $endOffset, 1);
-                        $sentence = substr_replace($sentence, "(quote ", $beginOffset, 1);
-                        //update $sentence length, and set offset to 0;
-                        $length = strlen($sentence);
-                        $offset = 0;
-                        $findQuote = false;
-                    }
-                }
-                //あるいは、(1 '2 3)のばあい
-                if($char === " " && $findQuote && $stack === 0) {
-                    $endOffset = $offset;
-                    //replace '... => (quote ...)
-                    $sentence = substr_replace($sentence, ") ", $endOffset, 1);
-                    $sentence = substr_replace($sentence, "(quote ", $beginOffset, 1);
-                    //update $sentence length, and set offset to 0;
-                    $length = strlen($sentence);
-                    $offset = 0;
-                    $findQuote = false;
-                }
-            } while (++ $offset < $length);
-            if($findQuote) {
-                //replace '... => (quote ...)
-                $sentence = substr_replace($sentence, ") ", $offset, 1);
-                $sentence = substr_replace($sentence, "(quote ", $beginOffset, 1);
-            }
-        }
-        return $sentence;
-    }
-
     //replとして成立するには、( と ) が同じ数でなればいけません　
     // ※両方とも0が可
     // ※ここでは有効なS式であるかどかのチェックを行っていません

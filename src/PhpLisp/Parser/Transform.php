@@ -14,43 +14,23 @@ use PhpLisp\Exception\ParseException as Exception;
  */
 class Transform {
     
-    public static $special = array("'" => "quote", "#'" => "transformfunction", "`" => "transformbackQuote", "," => "transformexpand", "@" => "transformexpandList");
+    public static $special = array("'" => "quote", "#'" => "transformFunction", "`" => "transformBackQuote", "," => "transformExpand", "@" => "transformExpandList");
     
-    public static function translateExpression ($node, $sentence, $sentence_left, $sentence_right) {
+    public static function translate ($node, $sentence, $sentence_left, $sentence_right) {
         $node = self::cons($node, $sentence_right);
-        return $node;
-    }
-
-    public static function translateStack($stack) {
-        $stack = self::backQuoteStack($stack);
-        return $stack;
-    }
-
-    public static function translate($node) {
-        $node = self::backQuote($node);
-        return $node;
-    }
-
-
-    public static function backQuote ($node) {
-        if(Type::isSymbol($node)) {
-            Debug::p($node);
-            $value = $node->nodeValue;
-            if($value[0] === "`") {
-                if(!isset($value[1])) {
-                    throw new Exception(" End of file during parsing.");
-                }
-                $value = substr_replace($value, "", 0, 1);
-                $node->setValue($value);
-                return new Expression("(quote " . $value . ")", Type::Expression, Parser::read("quote"), $node);
-            }
+        $nodeValue = $node->leftLeaf->nodeValue;
+        if(method_exists(__CLASS__, $nodeValue)) {
+            $node = call_user_func("self::" . $nodeValue, $node, $sentence);
         }
         return $node;
     }
 
-    public static function backQuoteStack ($stack) {
-        //Debug::p($stack);
-        return $stack;
+    public static function transformBackQuote ($node) {
+        $target = $node->rightLeaf;
+        
+
+        Debug::p($target);
+        return $node;
     }
 
     //cons変換

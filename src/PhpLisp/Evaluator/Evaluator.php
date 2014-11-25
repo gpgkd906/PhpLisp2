@@ -32,7 +32,7 @@ class Evaluator extends AbstractEvaluator {
                 $node = ExpressionEvaluator::evaluate($node, $scope);
                 if(Type::isNull($node)) {
                     return $node;
-                } else if (Type::isExpression($node)) {
+                } else if (Type::isExpression($node) || Type::isCons($node)) {
                     return $node->leftLeaf;
                 } else {
                     $nodeString = self::asString($node);
@@ -62,13 +62,15 @@ class Evaluator extends AbstractEvaluator {
                 $node = ExpressionEvaluator::evaluate($node, $scope);
                 if(Type::isNull($node)) {
                     $cdr = $node;
-                } else if (Type::isExpression($node)) {
+                } else if (Type::isExpression($node) || Type::isCons($node)) {
                     $cdr = $node->rightLeaf;
                 } else {
                     $nodeString = self::asString($node);
                     throw new Exception("[cdr 1] Error: {$nodeString} is not of type List.");
                 }
-                if( Type::isLispExpression($cdr) ) {
+                if( Type::isCons($node)) {
+                    return $cdr;
+                } else if( Type::isLispExpression($cdr) ) {
                     return self::warpExpression($cdr);
                 } else if ( Type::isStack($cdr) ) {
                     //現在の実装では、expressionでなければ，stackになる
