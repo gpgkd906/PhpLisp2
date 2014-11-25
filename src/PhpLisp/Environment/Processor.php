@@ -134,6 +134,11 @@ class Processor {
             "progn" => new Expression("progn", Type::Func, null, function($tree, $node, $scope) {
                 
             }),
+            "gensym" => new Expression("gensym", Type::Func, null, function($tree, $node, $scope) {
+                $uniqid = Environment::generateUniqueId("#:G");
+                $symbol = new Expression($uniqid, Type::Symbol);
+                return $symbol;
+            }),
             "lambda" => new Expression("lambda", Type::Func, null, function($stack, $node, $scope) {
                 $lambdaHeader = "LAMBDA-CLOSURE () () ()";
                 $lambdaParam = Expression::$nilInstance;

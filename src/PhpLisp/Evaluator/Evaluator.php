@@ -123,10 +123,10 @@ class Evaluator extends AbstractEvaluator {
     }
 
     public static function tryEvalExpression($tree, $scope) {
-        if(!Type::isExpression($tree)) {
-            return $tree;
+        if(Type::isExpression($tree) || Type::isCons($tree)) {
+            return ExpressionEvaluator::evaluate($tree, $scope);
         }
-        return ExpressionEvaluator::evaluate($tree, $scope);
+        return $tree;
     }
 
     public static function evaluate(Expression $tree, $scope) {
