@@ -197,6 +197,34 @@ class Evaluator extends AbstractEvaluator {
         }
         return call_user_func($func, $res, $tree, $scope);
     }
+
+    public static function map ($tree, $func, $scope) {
+        if( Type::isLispExpression($tree) ) {
+            return self::mapTree($tree, $func, $scope);
+        } else if ( Type::isStack($tree) ) {
+            return self::mapStack($tree, $func, $scope);            
+        }
+    }
+
+    public static function mapStack ($stack, $func, $scope) {
+        $size = $stack->size();
+        while ($size --> 0) {
+            $stack->push(
+                call_user_func($func, $stack->shift(), $scope)
+            );
+        }
+        return $stack;
+    }
+
+    public static function mapTree ($tree, $func, $scope) {
+        $tree->leftLeaf = call_user_func($func, $tree->leftLeaf, $scope);
+        if(Type::isStack($tree->rightLeaf)) {
+            $tree->rightLeaf = self::mapStack($tree->rightLeaf, $func, $scope);
+        } else {
+            $tree->rightLeaf = call_user_func($func, $tree->rightLeaf, $scope);
+        }
+        return $tree;
+    }
     
 
 }

@@ -7,6 +7,7 @@ use PhpLisp\Evalutor\Evaluator as Evaluator;
 use PhpLisp\Environment\SymbolTable as SymbolTable;
 use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Expression\Type as Type;
+use PhpLisp\Expression\Stack as Stack;
 use PhpLisp\Exception\ParseException as Exception;
 
 /**
@@ -26,10 +27,18 @@ class Transform {
     }
 
     public static function transformBackQuote ($node) {
-        $target = $node->rightLeaf;
-        
+        $right = $node->rightLeaf;
+        if(Type::isSymbol($right)) {
+            $node->setValue("(quote " . $right->nodeValue . ")");
+            $node->leftLeaf = Parser::read("quote");
+            Debug::p($node);
+        } else if(Type::isLispExpression($right)) {
+            $stack = Stack::fromExpression($right);
+            
+            Debug::p($stack);
+        }
 
-        Debug::p($target);
+        Debug::p($right);
         return $node;
     }
 
