@@ -45,7 +45,7 @@ class Environment {
         Expression::$quoteInstance = new Expression("quote", Type::Symbol);
         Expression::$listInstance = new Expression("list", Type::Symbol);
     }
-    
+
     public static function setSymbol($scope, $symbol, $node) {
         if(!$symbolTable = self::$symbolTable->get($scope)) {
             $symbolTable = new SymbolTable;

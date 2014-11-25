@@ -11,8 +11,8 @@ use PhpLisp\Evaluator\Evaluator as Evaluator;
 class MemoryOperator extends AbstractOperator {
 
     public function evaluate ($tree, $scope) {
-		$usage = sprintf('%01.2f Byte', memory_get_usage() );
-		$usage_human = sprintf('%01.2f MB', memory_get_usage() / 1048576);
+        $usage = sprintf('%01.2f Byte', memory_get_usage() );
+        $usage_human = sprintf('%01.2f MB', memory_get_usage() / 1048576);
         Environment::write($usage);
         Environment::write(Environment::$eol);
         Environment::write($usage_human);

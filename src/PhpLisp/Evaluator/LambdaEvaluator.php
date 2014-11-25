@@ -25,7 +25,6 @@ class LambdaEvaluator extends AbstractEvaluator {
         }
         self::bindParamToScope($lambda->leftLeaf, $param, $lambdaName, $scope, $callScope);
         $result = self::callOnScope($lambda->rightLeaf, $lambdaName, $scope);
-        //Environment::clearScope($scope);
         return $result;
     }
 
