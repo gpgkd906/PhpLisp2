@@ -21,6 +21,7 @@ PhpLisp is yet another Lisp Interpreter/Dialect written in PHP.
     Evaluator\Evaluator rewrite
     replace Evaluator\Lambda with Evaluator\LambdaEvaluator
     Environment\Processor rewrite
-    
-    uncompleted task
     add Parser\Macro
+
+    uncomplete task
+    debug Macro

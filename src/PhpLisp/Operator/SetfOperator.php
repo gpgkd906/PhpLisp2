@@ -25,8 +25,8 @@ class SetfOperator extends AbstractOperator {
                 $nodeString = Evaluator::asString($lastUnit);
                 throw new Exception("Error: No value for {$nodeString}.");
             }
+            
             $offset = 0;
-
             while($offset < $treeSize) {
                 $symbol = $tree->getAt($offset);
                 $value = $tree->getAt($offset + 1);

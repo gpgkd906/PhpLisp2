@@ -1,3 +1,26 @@
+(setf lst '(a b c))
+
+`(lst is ,@lst)
+
+(defun test (x y z) 
+  (setf test (+ x y))
+  (- z test)
+  )
+
+#'test
+
+`(lst is lst)
+
+(defmacro nil! (x)
+  (list 'setf x nil))
+
+(nil! x)
+
+(defmacro abcd (x)
+  (setf y (gensym))
+  `(setf ,y ,x)
+  )
+
 (car '(0 0)) ;should be 0
 
 (cdr '(0 0)) ;should be (0)
@@ -6,7 +29,6 @@
 
 
 (car (cdr (cdr '(1 2 3)))) ;should be 3
-
 
 (car nil) ;should be nil
 
@@ -28,10 +50,6 @@
 
 (+ 3 4 (+ 3 4 (+ (+ 2 3) (- 3 3))) 1) ;should be 20
 
-(defun test (x y z) 
-  (setf test (+ x y))
-  (- z test)
-  )
 
 (test 1 5 21) ;should be 15
 
@@ -59,8 +77,8 @@ test ;should be 3
   (cond ((eql n 1) 1)
 	((eql n 0) 0)
 	(t (+ (fib (- n 1)) (fib (- n 2))))
-	))
+	)) ;should be print the lambda-block
 
-(fib 6)
+(fib 6) ;should be 8
 
-exit
+(memory)
