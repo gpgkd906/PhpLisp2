@@ -14,6 +14,8 @@ use PhpLisp\Exception\ParseException as Exception;
  */
 class Transform {
     
+    public static $special = array("'" => "quote", "#'" => "transformfunction", "`" => "transformbackQuote", "," => "transformexpand", "@" => "transformexpandList");
+    
     public static function translateExpression ($node, $sentence, $sentence_left, $sentence_right) {
         $node = self::cons($node, $sentence_right);
         return $node;
@@ -32,6 +34,7 @@ class Transform {
 
     public static function backQuote ($node) {
         if(Type::isSymbol($node)) {
+            Debug::p($node);
             $value = $node->nodeValue;
             if($value[0] === "`") {
                 if(!isset($value[1])) {

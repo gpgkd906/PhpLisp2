@@ -9,7 +9,6 @@ use PhpLisp\Exception\ParseException as Exception;
 
 class Reader {
     
-    public static $special = array("'", "#'", "`", ",", "@");
     /**
      * 
      * @api
@@ -273,7 +272,7 @@ class Reader {
      * @link
      */
     public static function normalize ($sentence) {
-        foreach(self::$special as $special) {
+        foreach(Transform::$special as $special => $translate) {
             //: 'a' b => 'a'b
             while(strpos($sentence, $special . " ") !==false) {
                 $sentence = str_replace($special . " ", $special, $sentence);
@@ -281,9 +280,20 @@ class Reader {
             //: 'a'b => 'a 'b 
             //'a 'b => 'a  'b (空白をあける※空白2つはできるかもしれません)
             $sentence = str_replace($special, " " . $special, $sentence);
+            //: 'a  'b => 'a 'b (重複な空白を取り除く)
+            $sentence = Parser::removeDummySpace($sentence);   
+            if(strpos($sentence, $special) === 0) {
+                $test = substr_replace($sentence, "", 0, strlen($special));
+                if(self::isExpressionSentence($test)
+                || self::isNilSentence($test)
+                || self::isTrueSentence($test)
+                || self::isScalarSentence($test)
+                || self::isSymbolSentence($test)) {
+                    $sentence = "(" . $translate . " " . $test . ")";
+                }
+            }
         }
-        //: 'a  'b => 'a 'b (重複な空白を取り除く)
-        $sentence = Parser::removeDummySpace($sentence);   
+        return $sentence;
         //quote展開、将来はmacroに移す予定
         return self::deformQuote($sentence);
     }
