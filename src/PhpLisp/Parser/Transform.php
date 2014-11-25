@@ -42,6 +42,10 @@ class Transform {
                 $stack = Evaluator::map($stack, function($node, $scope) {
                     if(Type::isSymbol($node)) {
                         $node = new Expression("(quote " . $node->nodeValue . ")", Type::Expression, Parser::read("quote"), $node);
+                    } else if(Type::isExpression($node)) {
+                        if(Evaluator::asString($node->leftLeaf) === "TRANSFORMEXPAND") {
+                            $node = $node->rightLeaf;
+                        }
                     }
                     return $node;
                 }, self::$scope);
