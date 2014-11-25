@@ -28,7 +28,7 @@ class ExpressionEvaluator extends AbstractEvaluator {
             throw new Exception("Error: {$nodeString} is invalid as a function.");
         }
         if( Type::isFunc($node) ) {
-            $result = call_user_func($node->rightLeaf, $right, $tree, $scope);
+            $result = call_user_func($node->rightLeaf, $right, $scope);
         } else if(Type::isLambda($node)) {
             $result = LambdaEvaluator::apply($node, $right, self::asString($left), $scope);
         } else {

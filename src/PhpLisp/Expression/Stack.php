@@ -62,6 +62,14 @@ class Stack {
         }
     }
 
+    public function toString() {
+        $values = array();
+        foreach($this->stack as $node) {
+            $values[] = $node->nodeValue;
+        }
+        return join(" ", $values);
+    }
+
     public function toExpression () {
         $stack = $this->stack;
         $values = array();

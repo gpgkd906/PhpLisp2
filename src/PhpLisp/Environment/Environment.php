@@ -7,6 +7,7 @@ use PhpLisp\Evaluator\Evaluator as Evaluator;
 use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Expression\Type as Type;
 use PhpLisp\Exception\EvalException as Exception;
+use PhpLisp\Operator\Operator as Operator;
 
 class Environment {
     public static $symbolTable;
@@ -30,17 +31,12 @@ class Environment {
         if(!empty(self::$symbolTable)) {
             return false;
         }
-        //Processorを初期化 (buildin function)
-        Processor::initialization();
         //SymbolTable初期化
         self::$symbolTable = new SymbolTable;
         self::$lambdaTable = new SymbolTable;
-        foreach(Processor::get() as $symbol => $node) {
-            if(Type::isFunc($node) || Type::isLambda($node)) {
-                self::setLambda(self::$rootScope, $symbol, $node);
-            } else {
-                self::setSymbol(self::$rootScope, $symbol, $node);
-            }
+        //buildin関数を登録する
+        foreach(Operator::getAll() as $symbol => $node) {
+            self::setLambda(self::$rootScope, $symbol, $node);
         }
         //nilやTのS式初期化(nil/Tは内部的に繰り返すで利用するため)
         Expression::$nilInstance = new Expression("Nil", Type::Nil);
