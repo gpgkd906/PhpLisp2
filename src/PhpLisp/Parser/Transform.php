@@ -13,7 +13,7 @@ use PhpLisp\Exception\ParseException as Exception;
  * parse段階でのPHPによる構文木変換
  */
 class Transform {
-
+    
     public static function translateExpression ($node, $sentence, $sentence_left, $sentence_right) {
         $node = self::cons($node, $sentence_right);
         return $node;

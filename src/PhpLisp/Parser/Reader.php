@@ -9,6 +9,7 @@ use PhpLisp\Exception\ParseException as Exception;
 
 class Reader {
     
+    public static $special = array("'", "#'", "`", ",", "@");
     /**
      * 
      * @api
@@ -265,20 +266,24 @@ class Reader {
 
     /**
      * S式を正規化
+     * スペシャル文字を正規化する（例としては'を使う）
      * @api
      * @param string $sentence
      * @return bool
      * @link
      */
     public static function normalize ($sentence) {
-        //: 'a' b => 'a'b
-        while(strpos($sentence, "' ") !==false) {
-            $sentence = str_replace("' ", "'", $sentence);
+        foreach(self::$special as $special) {
+            //: 'a' b => 'a'b
+            while(strpos($sentence, $special . " ") !==false) {
+                $sentence = str_replace($special . " ", $special, $sentence);
+            }
+            //: 'a'b => 'a 'b 
+            //'a 'b => 'a  'b (空白をあける※空白2つはできるかもしれません)
+            $sentence = str_replace($special, " " . $special, $sentence);
         }
-        //: 'a'b => 'a 'b | 'a 'b => 'a  'b (空白は2つ)
-        $sentence = str_replace("'", " '", $sentence);
         //: 'a  'b => 'a 'b (重複な空白を取り除く)
-        $sentence = Parser::removeDummySpace($sentence);
+        $sentence = Parser::removeDummySpace($sentence);   
         //quote展開、将来はmacroに移す予定
         return self::deformQuote($sentence);
     }
