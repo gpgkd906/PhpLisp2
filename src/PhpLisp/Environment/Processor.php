@@ -68,14 +68,24 @@ class Processor {
                 }
                 return Debug::t($tree);
             }),
-            "assert" => new Expression("assert", Type::Func, null, function($tree, $node, $scope) {
-                $left = Evaluator::car($tree, $scope);
-                $right = Evaluator::cdr($tree, $scope);
-                if(Evaluator::evalTree($left) === Evaluator::evalTree($right)) {
-                    return Expression::$trueInstance;
+            "getLambda" => new Expression("getLambda", Type::Func, null, function($tree, $node, $scope) {
+                $tree = Evaluator::tryEvalExpression($tree, $scope);
+                if(Type::isSymbol($tree)) {
+                    $treeString = Evaluator::asString($tree);
+                    if($lambda = Environment::getLambda($scope, $tree->nodeValue)) {
+                        if(Type::isLambda($lambda)) {
+                            return $lambda;
+                        } else if(Type::isFunc($lambda)) {
+                            return "#<compiled-function {$treeString}>";
+                        }
+                    } else {
+                        throw new Exception("Error: {$treeString} is invalid as a function.");
+                    }
                 } else {
-                    throw new Exception("assert failed!{Evaluator::asString($tree)}");
+                    $treeString = Evaluator::asString($tree);
+                    throw new Exception("Error: {$treeString} is invalid as a function.");
                 }
+
             }),
             "exit" => new Expression("exit", Type::Func, null, function($tree, $node, $scope) {
                 Environment::write("exit!");

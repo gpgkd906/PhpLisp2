@@ -113,7 +113,7 @@ class Parser {
                 $sentence = self::warpSentence($sentence);
                 list($left, $right) = self::separate($sentence);
                 $stack->push( self::read($left) );
-                $sentence = trim($right);
+                $sentence = Reader::normalize($right);
                 if($sentence === "()") {
                     $stack->push( Expression::$nilInstance );
                     $sentence = "";

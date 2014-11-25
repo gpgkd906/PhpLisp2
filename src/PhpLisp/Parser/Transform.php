@@ -17,7 +17,7 @@ class Transform {
     
     public static $scope = "transform";
     
-    public static $special = array("'" => "quote", "`" => "transformBackQuote", "#'" => "getLambda", "," => "transformExpand", "@" => "transformExpandList");
+    public static $special = array("#'" => "getLambda", "'" => "quote", "`" => "transformBackQuote", "," => "transformExpand", "@" => "transformExpandList");
     
     public static function translate ($node, $sentence, $sentence_left, $sentence_right) {
         $node = self::cons($node, $sentence_right);
