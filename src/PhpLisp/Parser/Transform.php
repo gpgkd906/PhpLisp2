@@ -34,19 +34,19 @@ class Transform {
         $right = $node->rightLeaf;
         if(Type::isSymbol($right)) {
             $node->setValue("(quote " . $right->nodeValue . ")");
-            $node->leftLeaf = Parser::read("quote");
+            $node->leftLeaf = Expression::$quoteInstance;
         } else if(Type::isLispExpression($right)) {
             $stack = Stack::fromExpression($right);
             $size = $stack->size();
             if($size === 1) {
-                $node = new Expression("(quote " . $right->nodeValue . ")", Type::Expression, Parser::read("quote"), $right);
+                $node = new Expression("(quote " . $right->nodeValue . ")", Type::Expression, Expression::$quoteInstance, $right);
             } else {
                 $newStack = new Stack;
                 $scope = self::$scope;
                 while($size --> 0) {
                     $node = $stack->shift();
                     if(Type::isSymbol($node)) {
-                        $node = new Expression("(quote " . $node->nodeValue . ")", Type::Expression, Parser::read("quote"), $node);
+                        $node = new Expression("(quote " . $node->nodeValue . ")", Type::Expression, Expression::$quoteInstance, $node);
                         $newStack->push($node);
                     } else if(Type::isExpression($node)) {
                         if(Evaluator::asString($node->leftLeaf) === "TRANSFORMEXPAND") {
@@ -58,7 +58,7 @@ class Transform {
                             $rightSize = $right->size();
                             while($rightSize --> 0) {
                                 $unit = $right->shift();
-                                $unit = new Expression("(quote " . $unit->nodeValue . ")", Type::Expression, Parser::read("quote"), $unit);
+                                $unit = new Expression("(quote " . $unit->nodeValue . ")", Type::Expression, Expression::$quoteInstance, $unit);
                                 $newStack->push($unit);
                             }
                         }
@@ -69,7 +69,7 @@ class Transform {
                     $values[] = $newStack->getAt($offset)->nodeValue;
                 }
                 $nodeValue = join(" ", $values) . ")";
-                $node = new Expression($nodeValue, Type::Expression, Parser::read("list"), $newStack);
+                $node = new Expression($nodeValue, Type::Expression, Expression::$listInstance, $newStack);
             }
         }
         return $node;

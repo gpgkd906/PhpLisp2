@@ -45,6 +45,9 @@ class Environment {
         //nilやTのS式初期化(nil/Tは内部的に繰り返すで利用するため)
         Expression::$nilInstance = new Expression("Nil", Type::Nil);
         Expression::$trueInstance = new Expression("T", Type::True);
+        //quoteのSymbolもパース時のマクロ変換で繰り返すで利用されるためキャッシュする
+        Expression::$quoteInstance = new Expression("quote", Type::Symbol);
+        Expression::$listInstance = new Expression("list", Type::Symbol);
     }
     
     public static function setSymbol($scope, $symbol, $node) {

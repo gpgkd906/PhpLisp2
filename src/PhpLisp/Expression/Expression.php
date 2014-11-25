@@ -15,6 +15,8 @@ class Expression {
 
     public static $nilInstance;
     public static $trueInstance;
+    public static $quoteInstance;
+    public static $listInstance;
     
     public function __construct($rawValue = null, $nodeType = null, $leftLeaf = null, $rightLeaf = null) {
         if(isset($rawValue)) {

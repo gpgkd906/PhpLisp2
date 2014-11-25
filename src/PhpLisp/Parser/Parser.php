@@ -35,13 +35,6 @@ class Parser {
         return "(" . $sentence . ")";
     }
 
-    public static function quote ($node) {
-        Environment::write("is it really need to quote something in parse-time? think about it!");
-        Environment::write(Environment::$eol);
-        $nodeValue = "(quote " . $node->nodeValue . ")";
-        return new Expression($nodeValue, Type::Expression, Parser::read("quote"), $node);
-    }
-
     public static function separate ($sentence) {
         //token解析しやすいため，括弧周りに空白を追加する
         $sentence = self::addDummySpace($sentence);
