@@ -16,7 +16,7 @@ class MacroExpandOperator extends AbstractOperator {
 
     public function evaluate ($tree, $scope) {
         $tree = Evaluator::evaluate($tree, $scope);
-        Environment::write(Evaluator::asString($tree->nodeValue));
+        Environment::write(Evaluator::asString($tree->rawValue));
         Environment::write(Environment::$eol);
         return Expression::$trueInstance;
     }

@@ -25,7 +25,7 @@ class Environment {
         self::$stdout = STDOUT;
         self::$eol = PHP_EOL;
         self::$seed = time();
-        self::$rootScope = array("root");
+        self::$rootScope = array("phplist-user");
         self::$terminalCode = array("exit", false);
 
         //初期化後、$symbolTableが必ず存在するので

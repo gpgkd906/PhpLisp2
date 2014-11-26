@@ -27,10 +27,6 @@ class Parser {
         return false;
     }
 
-    public static function flushError($errorMessage) {
-        throw new Exception($errorMessage);
-    }
-
     public static function warpSentence ($sentence) {
         return "(" . $sentence . ")";
     }
@@ -99,10 +95,10 @@ class Parser {
     }
 
     private static function parse ($sentence, $type, $raw) {
-        if($type == self::Group) {
+        switch($type) {
+        case self::Group:
             $stack = new Stack;
             do {
-                
                 $sentence = self::warpSentence($sentence);
                 list($left, $right) = self::separate($sentence);
                 $stack->push( self::read($left) );
@@ -112,24 +108,27 @@ class Parser {
                     $sentence = "";
                 }
             } while (isset($sentence[0]));
-            return $stack;
-        }
-        if($type === Type::Nil) {
-            return Expression::$nilInstance;
-        }
-        $node = new Expression;
-        $node->setType($type);
-        $node->nodeValue = $sentence;
-        $node->rawValue = $raw;
-        switch($type) {
+            $node = $stack;
+            break;
+        case Type::Nil:
+            $node = Expression::$nilInstance;            
+            break;
         case Type::Expression:
             list($sentence_left, $sentence_right, $tokens_left, $tokens_right) = self::separate($sentence);
             $sentence_left = Reader::normalize($sentence_left);
             $sentence_right = Reader::normalize($sentence_right);
-            $node->leftLeaf = self::read($sentence_left);
-            $node->rightLeaf = self::read($sentence_right) ?: Expression::$nilInstance;
+
+            $node = new Expression(
+                $raw,
+                $type,
+                self::read($sentence_left),
+                self::read($sentence_right) ?: Expression::$nilInstance
+            );
             $node = Transform::translate($node, $sentence, $sentence_left, $sentence_right);
             $node = Macro::expand($node);
+            break;
+        default:
+            $node = new Expression($raw, $type);
             break;
         }
         return $node;

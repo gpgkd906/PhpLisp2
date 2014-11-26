@@ -59,28 +59,10 @@ class SetfOperator extends AbstractOperator {
                 $target = SymbolEvaluator::evaluate($target, $scope);
             }
             if($action === "CAR") {
-                $target->leftLeaf = $value;
-                if(Type::isStack($target->rightLeaf)) {
-                    $targetValue = "(" . $value->nodeValue . " " . $target->rightLeaf->toString() .")";
-                } else {
-                    $targetValue = "(" . $value->nodeValue . " " . $target->rightLeaf->nodeValue .")";
-                }
+                $target->setLeftLeaf($value);
             } else {
-                $target->rightLeaf = $value;
-                if(Type::isStack($value)) {
-                    $targetValue = "(" . $target->leftLeaf->nodeValue . " " . $value->toString() .")";
-                } else {
-                    if(Type::isScalar($value) || Type::isSymbol($value) || Type::isTrue($value)) {
-                        $targetValue = "(" . $target->leftLeaf->nodeValue . " . " . $value->nodeValue .")";
-                        $target->setType(Type::Cons);
-                    } else if(Type::isNull($value)){
-                        $targetValue = "(" . $target->leftLeaf->nodeValue .")";
-                    } else {
-                        $targetValue = "(" . $target->leftLeaf->nodeValue . " " . $value->nodeValue .")";
-                    }
-                }
+                $target->setRightLeaf($value);
             }
-            $target->setValue($targetValue);
         }
         return $value;
     }
