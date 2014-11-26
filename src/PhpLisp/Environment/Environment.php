@@ -28,6 +28,8 @@ class Environment {
         self::$rootScope = array("root");
         self::$terminalCode = array("exit", false);
 
+        //初期化後、$symbolTableが必ず存在するので
+        //$symbolTableをチェックすることで、重複初期化を避ける
         if(!empty(self::$symbolTable)) {
             return false;
         }
@@ -38,10 +40,10 @@ class Environment {
         foreach(Operator::getAll() as $symbol => $node) {
             self::setLambda(self::$rootScope, $symbol, $node);
         }
-        //nilやTのS式初期化(nil/Tは内部的に繰り返すで利用するため)
+        //nilやTのS式初期化(nil/Tは内部的に繰り返すで利用するためキャッシュする)
         Expression::$nilInstance = new Expression("Nil", Type::Nil);
         Expression::$trueInstance = new Expression("T", Type::True);
-        //quoteのSymbolもパース時のマクロ変換で繰り返すで利用されるためキャッシュする
+        //quoteやlistのSymbolもマクロ変換で繰り返すで利用されるためキャッシュする
         Expression::$quoteInstance = new Expression("quote", Type::Symbol);
         Expression::$listInstance = new Expression("list", Type::Symbol);
     }

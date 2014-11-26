@@ -14,6 +14,7 @@ use PhpLisp\Evaluator\SymbolEvaluator as SymbolEvaluator;
 class ListOperator extends AbstractOperator {
 
     public function evaluate ($tree, $scope) {
+        
         if(Type::isStack($tree)) {
             $size = $tree->size();
             while($size --> 0) {
@@ -32,6 +33,7 @@ class ListOperator extends AbstractOperator {
             $tree = SymbolEvaluator::evaluate($tree, $scope);
         }
         $nodeValue = "(" . $tree->nodeValue . ")";
-        return new Expression($nodeValue, Type::Cons, $tree, Expression::$nilInstance);
+        $node = new Expression($nodeValue, Type::Cons, $tree, Expression::$nilInstance);
+        return $node;
     }
 }

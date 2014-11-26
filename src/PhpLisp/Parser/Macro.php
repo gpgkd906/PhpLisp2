@@ -5,7 +5,7 @@ namespace PhpLisp\Parser;
 use PhpLisp\Environment\Debug as Debug;
 use PhpLisp\Environment\Environment as Environment;
 use PhpLisp\Evaluator\Evaluator as Evaluator;
-use PhpLisp\Evaluator\LambdaEvaluator as LambdaEvaluator;
+use PhpLisp\Evaluator\MacroEvaluator as MacroEvaluator;
 use PhpLisp\Environment\SymbolTable as SymbolTable;
 use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Expression\Type as Type;
@@ -55,7 +55,7 @@ class Macro {
             }
             if($macro = self::getMacro($left->nodeValue)) {
                 $name = $left->nodeValue;
-                $result = LambdaEvaluator::apply($macro, $right, $name, self::$scope);
+                $result = MacroEvaluator::apply($macro, $right, $name, self::$scope);
                 return self::expand($result);
             }
         }
