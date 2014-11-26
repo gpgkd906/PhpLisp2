@@ -30,7 +30,6 @@ class LambdaEvaluator extends AbstractEvaluator {
 
     public static function bindParamToScope($lambdaParam, $param, $lambdaName, $scope, $callScope) {
         if(Type::isExpression($param)) {
-            $param = ExpressionEvaluator::evaluate($param, $callScope);
             $tmp = new Stack;
             $tmp->push($param);
             $param = $tmp;

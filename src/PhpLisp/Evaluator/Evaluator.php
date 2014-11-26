@@ -37,6 +37,9 @@ class Evaluator extends AbstractEvaluator {
                     $nodeString = self::asString($node);
                     throw new Exception("[car: 1] Error: {$nodeString} is not of type List.");
                 }
+            } else if (Type::isSymbol($node)) {
+                $node = SymbolEvaluator::evaluate($node, $scope);
+                return $node->leftLeaf;
             }
             if(Type::isNull($node)) {
                 return Expression::$nilInstance;
@@ -76,7 +79,10 @@ class Evaluator extends AbstractEvaluator {
                     return $cdr->toExpression();
                 }
                 return $node->rightLeaf;
-            }
+           } else if (Type::isSymbol($node)) {
+                $node = SymbolEvaluator::evaluate($node, $scope);
+                return $node->rightLeaf;
+             }
             if(Type::isNull($node)) {
                 return Expression::$nilInstance;
             }
