@@ -18,10 +18,13 @@ class Stack {
         }
     }
     
-    public function pop () {
+    public function pop ($default = true) {
+        if($default === true) {
+            $default = Expression::$nilInstance;
+        }
         $unit = array_pop($this->stack);
         if($unit === null) {
-            return Expression::$nilInstance;
+            return $defalut;
         }
         return $unit;
     }
@@ -30,10 +33,13 @@ class Stack {
         return array_unshift($this->stack, $unit);
     }
 
-    public function shift () {
+    public function shift ($default = true) { 
+        if($default === true) {
+            $default = Expression::$nilInstance;
+        }
         $unit = array_shift($this->stack);
         if($unit === null) {
-            return Expression::$nilInstance;
+            return $default;
         }
         return $unit;
     }
@@ -42,23 +48,32 @@ class Stack {
         return count($this->stack);
     }
     
-    public function rest () {
+    public function rest ($default = true) {
+        if($default === true) {
+            $default = Expression::$nilInstance;
+        }
         if (empty($this->stack) ) {
-            return Expression::$nilInstance;
+            return $defalut;
         } else {
             return $this->stack;
         }
+    }
+    public function clear () {
+        $this->stack = array();
     }
 
     public function hasInstance ($object) {
         return is_a($object, __CLASS__);
     }
 
-    public function getAt ($index) {
+    public function getAt ($index, $default = true) {
+        if($default === true) {
+            $default = Expression::$nilInstance;
+        }
         if(isset($this->stack[$index])) {
             return $this->stack[$index];
         } else {
-            return Expression::$nilInstance;
+            return $default;
         }
     }
 

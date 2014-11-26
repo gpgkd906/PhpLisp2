@@ -79,7 +79,11 @@ class Evaluator extends AbstractEvaluator {
                 return $node->rightLeaf;
            } else if (Type::isSymbol($node)) {
                 $node = SymbolEvaluator::evaluate($node, $scope);
-                return $node->rightLeaf;
+                if(Type::isStack($node->rightLeaf)) {
+                    return $node->rightLeaf->toExpression();
+                } else {
+                    return $node->rightLeaf;
+                }
              }
             if(Type::isNull($node)) {
                 return Expression::$nilInstance;
