@@ -49,7 +49,7 @@ class Environment {
     }
 
     public static function setSymbol($scopeChain, $symbol, $node) {
-        //セットは常にもっとも内側のスコープに約束する
+        //パラメタの約束は常にもっとも内側のスコープに約束する
         $scope = array_pop($scopeChain);
         if(!$symbolTable = self::$symbolTable->get($scope)) {
             $symbolTable = new SymbolTable;
@@ -59,7 +59,7 @@ class Environment {
     }
 
     public static function getSymbol($scopeChain, $symbol) {
-        //ゲット時は内側から外側に辿りついて行く
+        //パラメタのアクセスは内側から外側に辿りついて行く
         while($scope = array_pop($scopeChain)) {
             if(!$symbolTable = self::$symbolTable->get($scope)) {
                 continue;
@@ -83,7 +83,7 @@ class Environment {
     }
 
     public static function setLambda($scopeChain, $symbol, $node) {
-        //セットは常にもっとも内側のスコープに約束する
+        //ラムダの約束は常にもっとも内側のスコープに約束する
         $scope = array_pop($scopeChain);
         if(!$symbolTable = self::$lambdaTable->get($scope)) {
             $symbolTable = new SymbolTable;
@@ -93,7 +93,7 @@ class Environment {
     }
 
     public static function getLambda($scopeChain, $symbol) {
-        //ゲット時は内側から外側に辿りついて行く
+        //ラムダのアクセスは内側から外側に辿りついて行く
         while($scope = array_pop($scopeChain)) {
             if(!$symbolTable = self::$lambdaTable->get($scope)) {
                 continue;

@@ -124,6 +124,8 @@ class Parser {
         switch($type) {
         case Type::Expression:
             list($sentence_left, $sentence_right, $tokens_left, $tokens_right) = self::separate($sentence);
+            $sentence_left = Reader::normalize($sentence_left);
+            $sentence_right = Reader::normalize($sentence_right);
             $node->leftLeaf = self::read($sentence_left);
             $node->rightLeaf = self::read($sentence_right) ?: Expression::$nilInstance;
             $node = Transform::translate($node, $sentence, $sentence_left, $sentence_right);

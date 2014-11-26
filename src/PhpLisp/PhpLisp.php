@@ -67,9 +67,9 @@ class PhpLisp {
    
     /**
      * コンパイラーインタフェース
-     * 未実装
+     * 未実装(現時点では実装予定なし)
      */
-    public static function compile () {}
+    private static function compile () {}
     
     public static function readline($prompt) {
         if(extension_loaded('readline')) {

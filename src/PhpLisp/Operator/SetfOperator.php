@@ -8,6 +8,8 @@ use PhpLisp\Expression\Type as Type;
 use PhpLisp\Expression\Stack as Stack;
 use PhpLisp\Environment\Debug as Debug;
 use PhpLisp\Evaluator\Evaluator as Evaluator;
+use PhpLisp\Evaluator\ExpressionEvaluator as ExpressionEvaluator;
+use PhpLisp\Evaluator\SymbolEvaluator as SymbolEvaluator;
 
 class SetfOperator extends AbstractOperator {
 
@@ -31,17 +33,55 @@ class SetfOperator extends AbstractOperator {
                 $symbol = $tree->getAt($offset);
                 $value = $tree->getAt($offset + 1);
                 if( !Type::isSymbol($symbol) ) {
+                    if(Type::isExpression($symbol)) { 
+                        return self::setfLeaf($symbol, $value, $scope);
+                    }
                     $nodeString = Evaluator::asString($symbol);
                     throw new Exception("Error: {$nodeString} is not of type SYMBOL.");
+                } else {
+                    $symbolKey = Evaluator::asString($symbol);
+                    $value = Evaluator::tryEvalExpression($value, $scope);
+                    Environment::setSymbol($scope, $symbolKey, $value);
+                    $offset = $offset + 2;
                 }
-                $symbolKey = Evaluator::asString($symbol);
-                $value = Evaluator::tryEvalExpression($value, $scope);
-                Environment::setSymbol($scope, $symbolKey, $value);
-                $offset = $offset + 2;
             }
             return $value;
         }
         $nodeString = Evaluator::asString($tree);
         throw new Exception("Error: No value for {$nodeString}.");
+    }
+
+    public function setfLeaf($tree, $value, $scope) {
+        $action = Evaluator::asString($tree->leftLeaf);
+        if($action === "CAR" || $action === "CDR") {
+            $target = $tree->rightLeaf;
+            if(Type::isSymbol($target)) {
+                $target = SymbolEvaluator::evaluate($target, $scope);
+            }
+            if($action === "CAR") {
+                $target->leftLeaf = $value;
+                if(Type::isStack($target->rightLeaf)) {
+                    $targetValue = "(" . $value->nodeValue . " " . $target->rightLeaf->toString() .")";
+                } else {
+                    $targetValue = "(" . $value->nodeValue . " " . $target->rightLeaf->nodeValue .")";
+                }
+            } else {
+                $target->rightLeaf = $value;
+                if(Type::isStack($value)) {
+                    $targetValue = "(" . $target->leftLeaf->nodeValue . " " . $value->toString() .")";
+                } else {
+                    if(Type::isScalar($value) || Type::isSymbol($value) || Type::isTrue($value)) {
+                        $targetValue = "(" . $target->leftLeaf->nodeValue . " . " . $value->nodeValue .")";
+                        $target->setType(Type::Cons);
+                    } else if(Type::isNull($value)){
+                        $targetValue = "(" . $target->leftLeaf->nodeValue .")";
+                    } else {
+                        $targetValue = "(" . $target->leftLeaf->nodeValue . " " . $value->nodeValue .")";
+                    }
+                }
+            }
+            $target->setValue($targetValue);
+        }
+        return $value;
     }
 }
