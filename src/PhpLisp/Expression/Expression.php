@@ -64,14 +64,20 @@ class Expression {
         }
         $leftValue = Type::isStack($left) ? $left->toString() : $left->nodeValue;
         $rightValue = Type::isStack($right) ? $right->toString() : $right->nodeValue;
-        if(Type::isCons($this)
-        && (Type::isScalar($right) || Type::isSymbol($right) || Type::isTrue($right))) {
-            $thisValue = "(" . $leftValue . " . " . $rightValue .")";
+        if(Type::isCons($this)){
+            if(Type::isScalar($right) || Type::isSymbol($right) || Type::isTrue($right)) {
+                $thisValue = "(" . $leftValue . " . " . $rightValue .")";
+            } else {
+                $rightValue = substr_replace(substr_replace($right->nodeValue, "", -1, 1), "", 0, 1);
+                $thisValue = "(" . $leftValue . " " . $rightValue .")";
+            }
             $this->setType(Type::Cons);
-        } else if(Type::isNull($right)){
-            $thisValue = "(" . $leftValue .")";
         } else {
-            $thisValue = "(" . $leftValue . " " . $rightValue .")";
+            if(Type::isNull($right)){
+                $thisValue = "(" . $leftValue .")";
+            } else {
+                $thisValue = "(" . $leftValue . " " . $rightValue .")";
+            }
         }
         $this->setValue($thisValue);
     }

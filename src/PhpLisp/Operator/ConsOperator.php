@@ -29,16 +29,7 @@ class ConsOperator extends AbstractOperator {
         $right = $tree->getAt(1);
         $left = Evaluator::tryEvalExpression($left, $scope);
         $right = Evaluator::tryEvalExpression($right, $scope);
-        if(Type::isExpression($right) || Type::isCons($right)) {
-            $nodeValue = substr_replace(Evaluator::asString($right), "(" . Evaluator::asString($left) . " ", 0, 1);
-            $cons = new Expression($nodeValue, Type::Expression, $left, Stack::fromExpression($right));
-        } else if(Type::isNull($right)) {
-            $nodeValue = "(" . Evaluator::asString($left) . ")";
-            $cons = new Expression($nodeValue, Type::Cons, $left, $right);
-        } else {
-            $nodeValue = "(" . Evaluator::asString($left) . " . " . Evaluator::asString($right) . ")";
-            $cons = new Expression($nodeValue, Type::Cons, $left, $right);
-        }
+        $cons = new Expression(null, Type::Cons, $left, $right);
         return $cons;
     }
 }

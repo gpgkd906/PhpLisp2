@@ -40,21 +40,8 @@ class Transform {
                     throw new Exception("Error: Two objects after dot.");                    
                 }
                 $right = $right->getAt(1);
-                if(Type::isExpression($right) || Type::isCons($right)) {
-                    $nodeValue = join(" ", array(
-                        "(", 
-                        $left->nodeValue, 
-                        substr_replace(
-                            substr_replace($right->nodeValue, "", -1, 1),
-                            "", 0, 1),
-                        ")"
-                    ));
-                    $node->nodeValue = Parser::removeDummySpace($nodeValue);
-                } else if(Type::isNull($right)) {
-                    $node->nodeValue = "(" . $left->nodeValue . ")";
-                }
-                $node->rightLeaf = $right;
                 $node->setType(Type::Cons);
+                $node->setRightLeaf($right);
             }
         }
         return $node;
