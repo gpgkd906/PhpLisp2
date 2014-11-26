@@ -1,3 +1,13 @@
+(defun philosoph (thing &optional (property 'fun))
+  (list thing 'is property))
+
+(philosoph 'death)
+
+(defun test (&optional opt &rest arg) (cdr arg))
+
+(test 1 2 3 4 5)
+;exit
+
 (setf lst '( 1  1 . 3))
 
 (setf (cdr lst) t)

@@ -23,8 +23,10 @@ PhpLisp is yet another Lisp Interpreter/Dialect written in PHP.
     Environment\Processor rewrite
     implement Macro
 
-    uncomplete task
+    workding
     add &optional keyword
-    add &rest keyword
+    add &rest keyword    
+
+    uncomplete task
     add package
     add CLOS
