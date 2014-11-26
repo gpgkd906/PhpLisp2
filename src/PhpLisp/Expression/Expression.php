@@ -26,10 +26,10 @@ class Expression {
             $this->setType($nodeType);
         }
         if(isset($leftLeaf)) {
-            $this->leftLeaf = $leftLeaf;
+            $this->setLeftLeaf( $leftLeaf );
         }
         if(isset($rightLeaf)) {
-            $this->rightLeaf = $rightLeaf;
+            $this->setRightLeaf( $rightLeaf );
         }
     }
 
@@ -45,35 +45,33 @@ class Expression {
 
     public function setLeftLeaf($left) {
         $this->leftLeaf = $left;
-        $right = $this->rightLeaf;
-        if(Type::isStack($right)) {
-            $thisValue = "(" . $left->nodeValue . " " . $right->toString() .")";
-        } else {
-            if(Type::isScalar($right) || Type::isSymbol($right) || Type::isTrue($right)) {
-                $thisValue = "(" . $left->nodeValue . " . " . $right->nodeValue .")";
-                $this->setType(Type::Cons);
-            } else if(Type::isNull($right)){
-                $thisValue = "(" . $left->nodeValue .")";
-            } else {
-                $thisValue = "(" . $left->nodeValue . " " . $right->nodeValue .")";
-            }
-        }
-        $this->setValue($thisValue);
+        $this->onSetLeaf();
     }
 
     public function setRightLeaf($right) {
         $this->rightLeaf = $right;
-        if(Type::isStack($right)) {
-            $thisValue = "(" . $this->leftLeaf->nodeValue . " " . $right->toString() .")";
+        $this->onSetLeaf();
+    }
+
+    public function onSetLeaf() {
+        $left = $this->leftLeaf;
+        if(empty($left)) {
+            return;
+        }
+        $right = $this->rightLeaf;
+        if(empty($right)) {
+            return;
+        }
+        $leftValue = Type::isStack($left) ? $left->toString() : $left->nodeValue;
+        $rightValue = Type::isStack($right) ? $right->toString() : $right->nodeValue;
+        if(Type::isCons($this)
+        && (Type::isScalar($right) || Type::isSymbol($right) || Type::isTrue($right))) {
+            $thisValue = "(" . $leftValue . " . " . $rightValue .")";
+            $this->setType(Type::Cons);
+        } else if(Type::isNull($right)){
+            $thisValue = "(" . $leftValue .")";
         } else {
-            if(Type::isScalar($right) || Type::isSymbol($right) || Type::isTrue($right)) {
-                $thisValue = "(" . $this->leftLeaf->nodeValue . " . " . $right->nodeValue .")";
-                $this->setType(Type::Cons);
-            } else if(Type::isNull($right)){
-                $thisValue = "(" . $this->leftLeaf->nodeValue .")";
-            } else {
-                $thisValue = "(" . $this->leftLeaf->nodeValue . " " . $right->nodeValue .")";
-            }
+            $thisValue = "(" . $leftValue . " " . $rightValue .")";
         }
         $this->setValue($thisValue);
     }
