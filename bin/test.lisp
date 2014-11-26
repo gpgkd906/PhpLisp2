@@ -1,6 +1,19 @@
+(setf lst '( 1  1 . 3))
+
+(setf (cdr lst) t)
+
+lst
+
+
+(defmacro cah (lst) `(car ,lst)) 
+
+(macroexpand-1 '(cah '(1 2 3)))
+
+(cah '(1 2 3)) ; should be 1
+
 (setf lst '(a b c))
 
-`(lst is ,@lst)
+`(lst is ,lst)
 
 (defun test (x y z) 
   (setf test (+ x y))
@@ -81,4 +94,4 @@ test ;should be 3
 
 (fib 6) ;should be 8
 
-(memory)
+
