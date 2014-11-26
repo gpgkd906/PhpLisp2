@@ -3,6 +3,7 @@
 namespace PhpLisp\Parser;
 
 use PhpLisp\Environment\Debug as Debug;
+use PhpLisp\Environment\Environment as Environment;
 use PhpLisp\Evaluator\Evaluator as Evaluator;
 use PhpLisp\Evaluator\LambdaEvaluator as LambdaEvaluator;
 use PhpLisp\Environment\SymbolTable as SymbolTable;
@@ -16,9 +17,13 @@ use PhpLisp\Exception\ParseException as Exception;
  */
 class Macro {
     public static $macroTable;
-    public static $scope = "macro";
+    public static $scope;
     
     public static function initialization() {
+        //まずマクロ実行時の最外側スコープであることを保証する
+        self::$scope = Environment::$rootScope;
+        //そして、マクロの実行スコープを追加する
+        self::$scope[] = "macro";
         self::$macroTable = new SymbolTable;
     }
 

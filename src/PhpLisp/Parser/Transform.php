@@ -14,18 +14,12 @@ use PhpLisp\Exception\ParseException as Exception;
 
 /**
  * parse段階でのPHPによる構文木変換
+ * cons変換
  */
 class Transform {
     
-    public static $scope = "transform";
-    
-    
     public static function translate ($node, $sentence, $sentence_left, $sentence_right) {
         $node = self::cons($node, $sentence_right);
-        /* $nodeValue = $node->leftLeaf->nodeValue; */
-        /* if(method_exists(__CLASS__, $nodeValue)) { */
-        /*     $node = call_user_func("self::" . $nodeValue, $node, $sentence); */
-        /* } */
         return $node;
     }
 

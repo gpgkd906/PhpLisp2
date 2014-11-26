@@ -25,7 +25,7 @@ class Environment {
         self::$stdout = STDOUT;
         self::$eol = PHP_EOL;
         self::$seed = time();
-        self::$rootScope = "root";
+        self::$rootScope = array("root");
         self::$terminalCode = array("exit", false);
 
         if(!empty(self::$symbolTable)) {
@@ -46,7 +46,9 @@ class Environment {
         Expression::$listInstance = new Expression("list", Type::Symbol);
     }
 
-    public static function setSymbol($scope, $symbol, $node) {
+    public static function setSymbol($scopeChain, $symbol, $node) {
+        //セットは常にもっとも内側のスコープに約束する
+        $scope = array_pop($scopeChain);
         if(!$symbolTable = self::$symbolTable->get($scope)) {
             $symbolTable = new SymbolTable;
             self::$symbolTable->set($scope, $symbolTable);
@@ -54,20 +56,23 @@ class Environment {
         return $symbolTable->set($symbol, $node);
     }
 
-    public static function getSymbol($scope, $symbol) {
-        if(!$symbolTable = self::$symbolTable->get($scope)) {
-            if(!$symbolTable = self::$symbolTable->get(self::$rootScope)) {
-                $symbolTable = new SymbolTable;
-                self::$symbolTable->set(self::$rootScope, $symbolTable);
+    public static function getSymbol($scopeChain, $symbol) {
+        //ゲット時は内側から外側に辿りついて行く
+        while($scope = array_pop($scopeChain)) {
+            if(!$symbolTable = self::$symbolTable->get($scope)) {
+                continue;
             }
+            if(($target = $symbolTable->get($symbol)) === null) {
+                continue;
+            }
+            return $target;
         }
-        if(($target = $symbolTable->get($symbol)) === null) {
-            return null;
-        }
-        return $target;
+        return null;
     }
 
-    public static function displaySymbol($scope) {
+    public static function displaySymbol($scopeChain) {
+        //display時基本的にコールされる場所のスコープを見るので、もっとも内側
+        $scope = array_pop($scopeChain);
         if(!$target = self::$symbolTable->get($scope)) {
             $target = new SymbolTable;
             self::$symbolTable->set($scope, $target);
@@ -75,7 +80,9 @@ class Environment {
         $target->showAll();
     }
 
-    public static function setLambda($scope, $symbol, $node) {
+    public static function setLambda($scopeChain, $symbol, $node) {
+        //セットは常にもっとも内側のスコープに約束する
+        $scope = array_pop($scopeChain);
         if(!$symbolTable = self::$lambdaTable->get($scope)) {
             $symbolTable = new SymbolTable;
             self::$lambdaTable->set($scope, $symbolTable);
@@ -83,20 +90,23 @@ class Environment {
         return $symbolTable->set($symbol, $node);
     }
 
-    public static function getLambda($scope, $symbol) {
-        if(!$symbolTable = self::$lambdaTable->get($scope)) {
-            if(!$symbolTable = self::$lambdaTable->get(self::$rootScope)) {
-                $symbolTable = new SymbolTable;
-                self::$lambdaTable->set(self::$rootScope, $symbolTable);                
+    public static function getLambda($scopeChain, $symbol) {
+        //ゲット時は内側から外側に辿りついて行く
+        while($scope = array_pop($scopeChain)) {
+            if(!$symbolTable = self::$lambdaTable->get($scope)) {
+                continue;
             }
+            if(($target = $symbolTable->get($symbol)) === null) {
+                continue;
+            }
+            return $target;
         }
-        if(($target = $symbolTable->get($symbol)) === null) {
-            return null;
-        }
-        return $target;
+        return null;
     }
     
-    public static function displayLambda($scope) {
+    public static function displayLambda($scopeChain) {
+        //display時基本的にコールされる場所のスコープを見るので、もっとも内側
+        $scope = array_pop($scopeChain);
         if(!$target = self::$lambdaTable->get($scope)) {
             $target = new SymbolTable;
             self::$lambdaTable->set($scope, $target);

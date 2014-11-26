@@ -30,7 +30,7 @@ class TransformBackQuoteOperator extends AbstractOperator {
                         $unit = new Expression("(quote " . $unit->nodeValue . ")", Type::Expression, Expression::$quoteInstance, $unit);
                         $stack->push($unit);
                     } else if(Type::isExpression($unit)) {
-                        $scope = $this->name;
+                        $scope[] = $this->name;
                         $obj = Evaluator::evaluate($unit, $scope);
                         if(Type::isStack($obj)) {
                             $objSize = $obj->size();

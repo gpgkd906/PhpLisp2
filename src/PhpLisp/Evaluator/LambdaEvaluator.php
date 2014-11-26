@@ -15,20 +15,21 @@ class LambdaEvaluator extends AbstractEvaluator {
 
     }
     
-    public static function apply($lambda, $param, $lambdaName, $callScope) {
-        $scope = Environment::generateUniqueId($lambdaName);
+    public static function apply($lambda, $param, $lambdaName, $scope) {
+        $lambdascope = Environment::generateUniqueId($lambdaName);
+        $scope[] = $lambdascope;
         if(Type::isNull($lambda->leftLeaf)) {
             throw new Exception("Error: No lambda list.");
         }
         if(Type::isNull($lambda->rightLeaf)) {
             return Expression::$nilExpression;
         }
-        self::bindParamToScope($lambda->leftLeaf, $param, $lambdaName, $scope, $callScope);
-        $result = self::callOnScope($lambda->rightLeaf, $lambdaName, $scope);
+        self::bindParam($lambda->leftLeaf, $param, $lambdaName, $scope);
+        $result = self::callBody($lambda->rightLeaf, $lambdaName, $scope);
         return $result;
     }
 
-    public static function bindParamToScope($lambdaParam, $param, $lambdaName, $scope, $callScope) {
+    public static function bindParam($lambdaParam, $param, $lambdaName, $scope) {
         if(Type::isExpression($param)) {
             $tmp = new Stack;
             $tmp->push($param);
@@ -59,7 +60,7 @@ class LambdaEvaluator extends AbstractEvaluator {
             if(Type::isExpression($p)) {
                 //パラメタがS式である場合，lambda実行場所のスコープではなく
                 //パラメタが定義した場所のスコープで評価しないといけません
-                $p = ExpressionEvaluator::evaluate($p, $callScope);
+                $p = ExpressionEvaluator::evaluate($p, $scope);
             }
             //パラメタ評価後の結果をlambda実行場所のスコープに約束する
             Environment::setSymbol($scope, Evaluator::asString($lp), $p);
@@ -67,7 +68,7 @@ class LambdaEvaluator extends AbstractEvaluator {
         }
     }
     
-    public static function callOnScope($lambdaBody, $lambdaName, $scope) {
+    public static function callBody($lambdaBody, $lambdaName, $scope) {
         $offset = 0;
         do {
             $node = $lambdaBody->getAt($offset);

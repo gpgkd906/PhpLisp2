@@ -10,10 +10,10 @@ use PhpLisp\Exception\Exception as Exception;
 class PhpLisp {
    
     public static function initialization () {
-        //Parser初期化
-        Parser::initialization();
         //PhpLisp VM初期化
         Environment::initialization();
+        //Parser初期化
+        Parser::initialization();
     }
 
     /**
