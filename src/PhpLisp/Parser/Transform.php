@@ -19,59 +19,13 @@ class Transform {
     
     public static $scope = "transform";
     
-    public static $special = array("#'" => "getLambda", "'" => "quote", "`" => "transformBackQuote", ",@" => "transformExpandList", "," => "transformExpand");
     
     public static function translate ($node, $sentence, $sentence_left, $sentence_right) {
         $node = self::cons($node, $sentence_right);
-        $nodeValue = $node->leftLeaf->nodeValue;
-        if(method_exists(__CLASS__, $nodeValue)) {
-            $node = call_user_func("self::" . $nodeValue, $node, $sentence);
-        }
-        return $node;
-    }
-
-    public static function transformBackQuote ($node) {
-        $right = $node->rightLeaf;
-        if(Type::isSymbol($right)) {
-            $node->setValue("(quote " . $right->nodeValue . ")");
-            $node->leftLeaf = Expression::$quoteInstance;
-        } else if(Type::isLispExpression($right)) {
-            $stack = Stack::fromExpression($right);
-            $size = $stack->size();
-            if($size === 1) {
-                $node = new Expression("(quote " . $right->nodeValue . ")", Type::Expression, Expression::$quoteInstance, $right);
-            } else {
-                $newStack = new Stack;
-                $scope = self::$scope;
-                while($size --> 0) {
-                    $node = $stack->shift();
-                    if(Type::isSymbol($node)) {
-                        $node = new Expression("(quote " . $node->nodeValue . ")", Type::Expression, Expression::$quoteInstance, $node);
-                        $newStack->push($node);
-                    } else if(Type::isExpression($node)) {
-                        if(Evaluator::asString($node->leftLeaf) === "TRANSFORMEXPAND") {
-                            $node = $node->rightLeaf;
-                            $newStack->push($node);
-                        }
-                        if(Evaluator::asString($node->leftLeaf) === "TRANSFORMEXPANDLIST") {
-                            $right = Stack::fromExpression(SymbolEvaluator::evaluate($node->rightLeaf, self::$scope));
-                            $rightSize = $right->size();
-                            while($rightSize --> 0) {
-                                $unit = $right->shift();
-                                $unit = new Expression("(quote " . $unit->nodeValue . ")", Type::Expression, Expression::$quoteInstance, $unit);
-                                $newStack->push($unit);
-                            }
-                        }
-                    }
-                }
-                $values = array("(list");
-                for($offset = 0, $size = $newStack->size(); $offset < $size; $offset++) {
-                    $values[] = $newStack->getAt($offset)->nodeValue;
-                }
-                $nodeValue = join(" ", $values) . ")";
-                $node = new Expression($nodeValue, Type::Expression, Expression::$listInstance, $newStack);
-            }
-        }
+        /* $nodeValue = $node->leftLeaf->nodeValue; */
+        /* if(method_exists(__CLASS__, $nodeValue)) { */
+        /*     $node = call_user_func("self::" . $nodeValue, $node, $sentence); */
+        /* } */
         return $node;
     }
 

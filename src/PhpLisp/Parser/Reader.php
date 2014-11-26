@@ -8,6 +8,8 @@ use PhpLisp\Expression\Type as Type;
 use PhpLisp\Exception\ParseException as Exception;
 
 class Reader {
+
+    public static $special = array("#'" => "getLambda", "'" => "quote", "`" => "transform.backquote", ",@" => "transform.expandList", "," => "transform.expand");
     
     /**
      * 
@@ -272,7 +274,7 @@ class Reader {
      * @link
      */
     public static function normalize ($sentence) {
-        foreach(Transform::$special as $special => $translate) {
+        foreach(self::$special as $special => $translate) {
             //: 'a' b => 'a'b
             while(strpos($sentence, $special . " ") !==false) {
                 $sentence = str_replace($special . " ", $special, $sentence);

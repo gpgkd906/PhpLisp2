@@ -1,0 +1,48 @@
+<?php
+namespace PhpLisp\Operator;
+
+use PhpLisp\Environment\Environment as Environment;
+use PhpLisp\Exception\EvalException as Exception;
+use PhpLisp\Expression\Expression as Expression;
+use PhpLisp\Expression\Type as Type;
+use PhpLisp\Expression\Stack as Stack;
+use PhpLisp\Environment\Debug as Debug;
+use PhpLisp\Evaluator\Evaluator as Evaluator;
+
+class TransformBackQuoteOperator extends AbstractOperator {
+
+    public $name = "transform.backquote";
+
+    public function evaluate ($tree, $scope) {
+        if(Type::isSymbol($tree)) {
+            $nodeValue = "(quote " . $tree->nodeValue . ")";
+            $node = new Expression($nodeValue, Type::Expression, Expression::$quoteInstance, $tree);
+        } else if(Type::isLispExpression($tree)) {
+            $stack = Stack::fromExpression($tree);
+            $size = $stack->size();
+            if($size === 1) {
+                $nodeValue = "(quote " . $tree->nodeValue . ")";
+                $node = new Expression($nodeValue, Type::Expression, Expression::$quoteInstance, $tree);
+            } else {
+                while ($size --> 0) {
+                    $unit = $stack->shift();
+                    if(Type::isSymbol($unit)) {
+                        $unit = new Expression("(quote " . $unit->nodeValue . ")", Type::Expression, Expression::$quoteInstance, $unit);
+                        $stack->push($unit);
+                    } else if(Type::isExpression($unit)) {
+                        $scope = $this->name;
+                        $unit = Evaluator::evaluate($unit, $scope);
+                        $stask->push($unit);
+                    }
+                }
+            }
+            $values = array("(list");
+            for($offset = 0, $size = $stack->size(); $offset < $size; $offset ++) {
+                $values[] = $stack->getAt($offset)->nodeValue;
+            }
+            $nodeValue = join(" ", $values) . ")";
+            $node = new Expression($nodeValue, Type::Expression, Expression::$listInstance, $stack);
+        }
+        return $node;
+    }
+}
