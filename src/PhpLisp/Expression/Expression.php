@@ -76,13 +76,17 @@ class Expression {
                 $thisValue = "(" . $leftValue . " " . $rightValue .")";
             }
             $this->setType(Type::Cons);
+            $this->setValue($thisValue);
+        } else if (Type::isLambda($this)){
+            //nodeValue was setted be DefunOperator/LambdaOperator 
+            //do not rewrite the nodeValue
         } else {
             if(Type::isNull($right)){
                 $thisValue = "(" . $leftValue .")";
             } else {
                 $thisValue = "(" . $leftValue . " " . $rightValue .")";
             }
+            $this->setValue($thisValue);
         }
-        $this->setValue($thisValue);
     }
 }

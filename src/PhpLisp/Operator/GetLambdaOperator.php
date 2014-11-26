@@ -11,7 +11,9 @@ class GetLambdaOperator extends AbstractOperator {
     
     public function evaluate ($tree, $scope) {
         $tree = Evaluator::tryEvalExpression($tree, $scope);
-        if(Type::isSymbol($tree)) {
+        if(Type::isLambda($tree)) {
+            return Evaluator::asString($tree);
+        } else if(Type::isSymbol($tree)) {
             $treeString = Evaluator::asString($tree);
             if($lambda = Environment::getLambda($scope, $tree->nodeValue)) {
                 if(Type::isLambda($lambda)) {
