@@ -32,7 +32,6 @@ class ListOperator extends AbstractOperator {
         } else if(Type::isSymbol($tree) ) {
             $tree = SymbolEvaluator::evaluate($tree, $scope);
         }
-        $nodeValue = "(" . $tree->nodeValue . ")";
         $node = new Expression($nodeValue, Type::Cons, $tree, Expression::$nilInstance);
         return $node;
     }

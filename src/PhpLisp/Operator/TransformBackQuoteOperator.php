@@ -21,13 +21,12 @@ class TransformBackQuoteOperator extends AbstractOperator {
             $stack = Stack::fromExpression($tree);
             $size = $stack->size();
             if($size === 1) {
-                $nodeValue = "(quote " . $tree->nodeValue . ")";
-                $node = new Expression($nodeValue, Type::Expression, Expression::$quoteInstance, $tree);
+                $node = new Expression(null, Type::Expression, Expression::$quoteInstance, $tree);
             } else {
                 while ($size --> 0) {
                     $unit = $stack->shift();
                     if(Type::isSymbol($unit)) {
-                        $unit = new Expression("(quote " . $unit->nodeValue . ")", Type::Expression, Expression::$quoteInstance, $unit);
+                        $unit = new Expression(null, Type::Expression, Expression::$quoteInstance, $unit);
                         $stack->push($unit);
                     } else if(Type::isExpression($unit)) {
                         $scope[] = $this->name;
@@ -36,23 +35,18 @@ class TransformBackQuoteOperator extends AbstractOperator {
                             $objSize = $obj->size();
                             while($objSize --> 0) {
                                 $unit = $obj->shift();
-                                $unit = new Expression("(quote " . $unit->nodeValue . ")", Type::Expression, Expression::$quoteInstance, $unit);
+                                $unit = new Expression(null, Type::Expression, Expression::$quoteInstance, $unit);
                                 $stack->push($unit);
                             }
                         } else {
                             $unit = $obj;
-                            $unit = new Expression("(quote " . $unit->nodeValue . ")", Type::Expression, Expression::$quoteInstance, $unit);
+                            $unit = new Expression(null, Type::Expression, Expression::$quoteInstance, $unit);
                             $stack->push($unit);
                         }
                     }
                 }
             }
-            $values = array("(list");
-            for($offset = 0, $size = $stack->size(); $offset < $size; $offset ++) {
-                $values[] = $stack->getAt($offset)->nodeValue;
-            }
-            $nodeValue = join(" ", $values) . ")";
-            $node = new Expression($nodeValue, Type::Expression, Expression::$listInstance, $stack);
+            $node = new Expression(null, Type::Expression, Expression::$listInstance, $stack);
         }
         return Evaluator::evaluate($node, $scope);
     }

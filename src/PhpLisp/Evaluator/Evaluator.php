@@ -52,9 +52,7 @@ class Evaluator extends AbstractEvaluator {
     }
 
     public static function warpExpression($node) {
-        $value = "(" . $node->rawValue . ")";
-        $warp = new Expression($value, Type::Expression, $node, Expression::$nilInstance);
-        return $warp;
+        return new Expression(null, Type::Expression, $node, Expression::$nilInstance);
     }
 
     public static function cdr ($node, $scope) {
@@ -93,14 +91,6 @@ class Evaluator extends AbstractEvaluator {
         }
     }
     
-    public static function quote($node) {
-        if(Type::isNull($node)) {
-            return Expression::$nilInstance;
-        }
-        $quoteValue = "(" . $node->nodeValue . ")";
-        return new Expression($quoteValue, Type::Quote);
-    }
-
     public static function asNumber($node, $scope) {
         if( Type::isExpression($node) ) {
             $node = ExpressionEvaluator::evaluate($node, $scope);

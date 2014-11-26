@@ -2,6 +2,8 @@
 
 namespace PhpLisp\Expression;
 
+use PhpLisp\Environment\Debug as Debug;
+
 class Expression {
 
     public $nodeValue = null;
@@ -67,7 +69,9 @@ class Expression {
         if(Type::isCons($this)){
             if(Type::isScalar($right) || Type::isSymbol($right) || Type::isTrue($right)) {
                 $thisValue = "(" . $leftValue . " . " . $rightValue .")";
-            } else {
+            } else if(Type::isNull($right)){
+                $thisValue = "(" . $leftValue .")";
+            } else if(Type::isExpression($right) || Type::isCons($right)) {
                 $rightValue = substr_replace(substr_replace($right->nodeValue, "", -1, 1), "", 0, 1);
                 $thisValue = "(" . $leftValue . " " . $rightValue .")";
             }
