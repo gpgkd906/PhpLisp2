@@ -24,8 +24,8 @@ class LambdaEvaluator extends AbstractEvaluator {
         if(Type::isNull($lambda->rightLeaf)) {
             return Expression::$nilExpression;
         }
-        self::bindParam($lambda->leftLeaf, $param, $lambdaName, $scope);
-        $result = self::callBody($lambda->rightLeaf, $lambdaName, $scope);
+        static::bindParam($lambda->leftLeaf, $param, $lambdaName, $scope);
+        $result = static::callBody($lambda->rightLeaf, $lambdaName, $scope);
         return $result;
     }
 
