@@ -61,7 +61,7 @@ class Evaluator extends AbstractEvaluator {
             if(Type::isExpression($node)) {
                 $node = ExpressionEvaluator::evaluate($node, $scope);
                 if(Type::isNull($node)) {
-                    $cdr = $node;
+                    return $node;
                 } else if (Type::isExpression($node) || Type::isCons($node)) {
                     $cdr = $node->rightLeaf;
                 } else {

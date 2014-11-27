@@ -20,7 +20,7 @@ class Macro {
     public static $scope;
     
     public static function initialization() {
-        //まずマクロ実行時の最外側スコープであることを保証する
+        //まずマクロ実行時の最外側スコープがrootScopeであることを保証する
         self::$scope = Environment::$rootScope;
         //そして、マクロの実行スコープを追加する
         self::$scope[] = "macro";
@@ -55,6 +55,7 @@ class Macro {
             }
             if($macro = self::getMacro($left->nodeValue)) {
                 $name = $left->nodeValue;
+                //多重マクロに対応
                 $result = MacroEvaluator::apply($macro, $right, $name, self::$scope);
                 return self::expand($result);
             }

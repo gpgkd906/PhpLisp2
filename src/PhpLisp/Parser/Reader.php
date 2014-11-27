@@ -9,7 +9,16 @@ use PhpLisp\Exception\ParseException as Exception;
 
 class Reader {
 
-    public static $special = array("#'" => "getLambda", "'" => "quote", "`" => "transform.backquote", ",@" => "transform.expandList", "," => "transform.expand");
+    public static $special = array(
+        "#'" => "getLambda",
+        "# '" => "getLambda",
+        "'," => "transform.quoteExpand",
+        "' ," => "transform.quoteExpand",
+        ",@" => "transform.expandList",
+        ", @" => "transform.expandList",
+        "'" => "quote",
+        "`" => "transform.backquote",
+        "," => "transform.expand");
     
     /**
      * 
@@ -231,6 +240,7 @@ class Reader {
         }
         //sentenceを正規化する、例えば'a' b => 'a 'bとか
         $sentence = self::normalize($input);
+        //Debug::t($sentence, $input);
         //正規化による無駄な空白を取り除く
         $sentence = Parser::removeDummySpace($sentence);
         //パタンマッチ　※lispでは文法がないので、ここも極めてシンプルになる
@@ -284,6 +294,8 @@ class Reader {
             $sentence = str_replace($special, " " . $special, $sentence);
             //: 'a  'b => 'a 'b (重複な空白を取り除く)
             $sentence = Parser::removeDummySpace($sentence);   
+        }
+        foreach(self::$special as $special => $translate) {
             if(strpos($sentence, $special) === 0) {
                 $test = substr_replace($sentence, "", 0, strlen($special));
                 if(self::isExpressionSentence($test)

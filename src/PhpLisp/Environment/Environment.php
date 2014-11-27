@@ -18,6 +18,8 @@ class Environment {
     public static $rootScope;
     private static $seed;
     private static $terminalCode;
+    private static $availablePackage;
+    private static $inPackage;
 
     //VMの実行環境を初期化
     public static function initialization() {
@@ -26,8 +28,9 @@ class Environment {
         self::$eol = PHP_EOL;
         self::$seed = time();
         self::$rootScope = array("phplist-user");
+        self::$availablePackage = array("phplist-user");
+        self::$inPackage = "phplist-user";
         self::$terminalCode = array("exit", false);
-
         //初期化後、$symbolTableが必ず存在するので
         //$symbolTableをチェックすることで、重複初期化を避ける
         if(!empty(self::$symbolTable)) {
@@ -48,6 +51,8 @@ class Environment {
         Expression::$listInstance = new Expression("list", Type::Symbol);
     }
 
+    public static function inPackage($package) {}
+    
     public static function setSymbol($scopeChain, $symbol, $node) {
         //パラメタの約束は常にもっとも内側のスコープに約束する
         $scope = array_pop($scopeChain);

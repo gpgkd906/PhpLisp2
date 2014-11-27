@@ -9,7 +9,7 @@ use PhpLisp\Expression\Stack as Stack;
 use PhpLisp\Environment\Debug as Debug;
 use PhpLisp\Evaluator\Evaluator as Evaluator;
 
-class EqlOperator extends AbstractOperator {
+class EqOperator extends AbstractOperator {
 
     public function evaluate ($tree, $scope) {
         if(!Type::isStack($tree)) {

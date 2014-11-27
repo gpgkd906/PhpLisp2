@@ -24,23 +24,18 @@ class LambdaEvaluator extends AbstractEvaluator {
         if(Type::isNull($lambda->rightLeaf)) {
             return Expression::$nilExpression;
         }
-        static::bindParam($lambda->leftLeaf, $param, $lambdaName, $scope);
+        static::bindParams($lambda->leftLeaf, $param, $lambdaName, $scope);
         $result = static::callBody($lambda->rightLeaf, $lambdaName, $scope);
         return $result;
     }
 
-    public static function bindParam($lambdaParam, $param, $lambdaName, $scope) {
+    public static function bindParams($lambdaParam, $param, $lambdaName, $scope) {
         if(Type::isExpression($param)) {
             $tmp = new Stack;
             $tmp->push($param);
             $param = $tmp;
         }
-        if(Type::isLispExpression($lambdaParam)) {
-            $lambdaParam = Stack::fromExpression($lambdaParam);
-        }
-        if(Type::isLispExpression($param)) {
-            $param = Stack::fromExpression($param);
-        }
+        list($lambdaParam, $param) = static::preParam($lambdaParam, $param);
         $lpSize = $lambdaParam->size();
         $pSize = $param->size();
         $poffset = 0;
@@ -54,25 +49,15 @@ class LambdaEvaluator extends AbstractEvaluator {
             }
             switch($lp->nodeValue) {
             case "&optional":
-                $lpoffset = $lpoffset + 1;
-                $lp = $lambdaParam->getAt($lpoffset);
-                $default =  Expression::$nilInstance;
-                if(Type::isExpression($lp) || Type::isCons($lp)) {
-                    $default = $lp->rightLeaf;
-                    $lp = $lp->leftLeaf;
-                }
-                $p = $param->shift($default);
+                list($lpoffset, $lp, $p) = static::optionalParam($lpoffset, $lambdaParam, $param);
                 $optinal = true;
                 break;
             case "&rest":
-                $lpoffset = $lpoffset + 1;
-                $lp = $lambdaParam->getAt($lpoffset);
-                $default = Expression::$nilInstance;
-                $p = new Expression(null, Type::Expression, Expression::$quoteInstance, $param->toExpression());
+                list($lpoffset, $lp, $p) = static::restParam($lpoffset, $lambdaParam, $param);
                 $optinal = true;
                 break;
             case "&key":
-
+                
                 $optinal = true;
                 break;
             default:
@@ -82,13 +67,7 @@ class LambdaEvaluator extends AbstractEvaluator {
             if($p === null) {
                 throw new Exception("Error: {$lambdaName} [or a callee] requires more than {$poffset} arguments.");
             }
-            if(Type::isExpression($p)) {
-                //パラメタがS式である場合，lambda実行場所のスコープではなく
-                //パラメタが定義した場所のスコープで評価しないといけません
-                $p = ExpressionEvaluator::evaluate($p, $scope);
-            }
-            //パラメタ評価後の結果をlambda実行場所のスコープに約束する
-            Environment::setSymbol($scope, Evaluator::asString($lp), $p);
+            static::bindParam($scope, $lp, $p);
             $lpoffset = $lpoffset + 1;
             $poffset = $poffset + 1;
         }
@@ -98,6 +77,49 @@ class LambdaEvaluator extends AbstractEvaluator {
                 throw new Exception("Error: {$lambdaName} [or a callee] requires less than {$pSize} arguments.");
             }
         }
+    }
+
+    public static function preParam($lambdaParam, $param) {
+        if(Type::isLispExpression($lambdaParam)) {
+            $lambdaParam = Stack::fromExpression($lambdaParam);
+        }
+        if(Type::isLispExpression($param)) {
+            $param = Stack::fromExpression($param);
+        }
+        return array($lambdaParam, $param);
+    }
+
+    public static function optionalParam($lpoffset, $lambdaParam, $param) {
+        $lpoffset = $lpoffset + 1;
+        $lp = $lambdaParam->getAt($lpoffset);
+        $default =  Expression::$nilInstance;
+        if(Type::isExpression($lp) || Type::isCons($lp)) {
+            $default = $lp->rightLeaf;
+            $lp = $lp->leftLeaf;
+        }
+        $p = $param->shift($default);
+        return array($lpoffset, $lp, $p);
+    }
+
+    public static function restParam($lpoffset, $lambdaParam, $param) {
+        $lpoffset = $lpoffset + 1;
+        $lp = $lambdaParam->getAt($lpoffset);
+        $default = Expression::$nilInstance;
+        $p = new Expression(null, Type::Expression, Expression::$quoteInstance, $param->toExpression());
+        return array($lpoffset, $lp, $p);
+    }
+
+    public static function keyParam() {
+        
+    }
+
+    public static function bindParam($scope, $lp, $p) {
+        if(Type::isExpression($p)) {
+            //パラメタが約束する前に評価が必要です
+            $p = ExpressionEvaluator::evaluate($p, $scope);
+        }
+        //パラメタ評価後の結果をlambda実行場所のスコープに約束する
+        Environment::setSymbol($scope, Evaluator::asString($lp), $p);        
     }
     
     public static function callBody($lambdaBody, $lambdaName, $scope) {
