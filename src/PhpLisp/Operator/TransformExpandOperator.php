@@ -17,9 +17,9 @@ class TransformExpandOperator extends AbstractOperator {
     public function evaluate ($tree, $scope) {
         if(!in_array("transform.backquote", $scope)) {
             throw new Exception("Error: A comma has appeared out of a backquote.");
-        }
-        if(Type::isSymbol($tree)) {
-            $node = SymbolEvaluator::evaluate($tree, $scope);
+        } 
+       if(Type::isSymbol($tree)) {
+           $node = SymbolEvaluator::evaluate($tree, $scope);
         } else {
             $node = Stack::fromExpression($tree);
         }

@@ -63,7 +63,9 @@ class SetfOperator extends AbstractOperator {
             } else {
                 $target->setRightLeaf($value);
             }
+            return $value;
         }
-        return $value;
+        $nodeString = Evaluator::asString($tree);
+        throw new Exception("Error: {$nodeString} is not of type SYMBOL.");
     }
 }

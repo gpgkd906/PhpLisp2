@@ -80,7 +80,7 @@ class Stack {
     public function toString() {
         $values = array();
         foreach($this->stack as $node) {
-            $values[] = $node->nodeValue;
+            $values[] = Type::isStack($node) ? $node->toString() : $node->nodeValue;
         }
         return join(" ", $values);
     }

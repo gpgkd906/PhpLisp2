@@ -11,8 +11,7 @@ use PhpLisp\Evaluator\Evaluator as Evaluator;
 class MicroTimeOperator extends AbstractOperator {
 
     public function evaluate ($tree, $scope) {
-        $now = microtime();
-        Environment::write($now);
-        Environment::write(Environment::$eol);
+        Environment::write( microtime() );
+        Environment::write( Environment::$eol );
     }
 }

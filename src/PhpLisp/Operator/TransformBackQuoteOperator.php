@@ -15,39 +15,29 @@ class TransformBackQuoteOperator extends AbstractOperator {
 
     public function evaluate ($tree, $scope) {
         if(Type::isSymbol($tree)) {
+            return $tree;
+        } else if (Type::isScalar($tree) || Type::isTrue($tree) || Type::isNull($tree)) {
             $nodeValue = "(quote " . $tree->nodeValue . ")";
             $node = new Expression($nodeValue, Type::Expression, Expression::$quoteInstance, $tree);
-        } else if(Type::isLispExpression($tree)) {
-            $stack = Stack::fromExpression($tree);
-            $size = $stack->size();
-            if($size === 1) {
-                $node = new Expression(null, Type::Expression, Expression::$quoteInstance, $tree);
+            return $node;
+        } else if(Type::isLispExpression($tree)){
+  
+            if("transform" === substr($tree->leftLeaf->nodeValue, 0, 9) ) {
+                $scope[] = $this->name;
+                return Evaluator::evaluate($tree, $scope);
             } else {
-                while ($size --> 0) {
-                    $unit = $stack->shift();
-                    if(Type::isSymbol($unit)) {
-                        $unit = new Expression(null, Type::Expression, Expression::$quoteInstance, $unit);
-                        $stack->push($unit);
-                    } else if(Type::isExpression($unit)) {
-                        $scope[] = $this->name;
-                        $obj = Evaluator::evaluate($unit, $scope);
-                        if(Type::isStack($obj)) {
-                            $objSize = $obj->size();
-                            while($objSize --> 0) {
-                                $unit = $obj->shift();
-                                $unit = new Expression(null, Type::Expression, Expression::$quoteInstance, $unit);
-                                $stack->push($unit);
-                            }
-                        } else {
-                            $unit = $obj;
-                            $unit = new Expression(null, Type::Expression, Expression::$quoteInstance, $unit);
-                            $stack->push($unit);
-                        }
-                    }
-                }
+                $tree->setLeftLeaf( self::evaluate($tree->leftLeaf, $scope) );
+                $tree->setRightLeaf( self::evaluate($tree->rightLeaf, $scope) );
+                return $tree;
             }
-            $node = new Expression(null, Type::Expression, Expression::$listInstance, $stack);
+        } else if(Type::isStack($tree)) {
+            $treeSize = $tree->size();
+            while($treeSize -- > 0) {
+                $unit = $tree->shift();
+                $unit = self::evaluate( $unit, $scope );
+                $tree->push( $unit );
+            }
+            return $tree;
         }
-        return Evaluator::evaluate($node, $scope);
     }
 }
