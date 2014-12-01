@@ -38,9 +38,10 @@ class Macro {
         if($stack->size() < 3) {
             throw new Exception("[DEFMACRO] Error: Too few arguments.");
         }
+        $nodeValue = $stack->toString();
         $symbol = $stack->shift()->nodeValue;
-        $param = Stack::fromExpression($stack->shift());
-        $macro = new Expression("MACRO", Type::Lambda, $param, $stack);
+        /* $param = Stack::fromExpression($stack->shift()); */
+        $macro = new Expression($nodeValue, Type::Macro);
         self::$macroTable->set($symbol, $macro);
     }
 
@@ -55,11 +56,20 @@ class Macro {
             }
             if($macro = self::getMacro($left->nodeValue)) {
                 $name = $left->nodeValue;
-                //多重マクロに対応
+                //マクロはreParserが必要
+                $macro = self::reParse($macro->nodeValue);
                 $result = MacroEvaluator::apply($macro, $right, $name, self::$scope);
                 return self::expand($result);
             }
         }
         return $node;
+    }
+
+    public static function reParse($nodeValue) {
+        $stack = Parser::read($nodeValue);
+        $symbol = $stack->shift()->nodeValue;
+        $param = Stack::fromExpression($stack->shift());
+        $macro = new Expression($nodeValue, Type::Lambda, $param, $stack);
+        return $macro;
     }
 }

@@ -13,13 +13,13 @@ class Type {
     const Nil = 6;
     const Func = 7;
     const Lambda = 8;
-    const Stream = 9;
+    const Macro = 9;    
+    const Stream = 10;
     
     const Stack = 21;
     
     public static $typeTable = array(
-        "undefine", "expression", "scalar", "symbol", "cons", "true", "nil", "func", "lambda", "stream", "stack"
-    );
+        "undefine", "expression", "scalar", "symbol", "cons", "true", "nil", "func", "lambda", "macro", "stream");
 
     public static function isLispExpression ($node) {
         return $node instanceOf Expression;

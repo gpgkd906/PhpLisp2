@@ -94,7 +94,7 @@ class Parser {
         return trim($sentence);
     }
 
-    private static function parse ($sentence, $type, $raw) {
+    public static function parse ($sentence, $type, $raw) {
         switch($type) {
         case self::Group:
             $stack = new Stack;
