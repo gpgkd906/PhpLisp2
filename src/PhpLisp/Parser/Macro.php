@@ -40,7 +40,6 @@ class Macro {
         }
         $nodeValue = $stack->toString();
         $symbol = $stack->shift()->nodeValue;
-        /* $param = Stack::fromExpression($stack->shift()); */
         $macro = new Expression($nodeValue, Type::Macro);
         self::$macroTable->set($symbol, $macro);
     }
@@ -56,9 +55,9 @@ class Macro {
             }
             if($macro = self::getMacro($left->nodeValue)) {
                 $name = $left->nodeValue;
-                //マクロはreParserが必要
-                $macro = self::reParse($macro->nodeValue);
-                $result = MacroEvaluator::apply($macro, $right, $name, self::$scope);
+                //マクロはreParserが必要※クーロンを作るため
+                $clone = self::reParse($macro->nodeValue);
+                $result = MacroEvaluator::apply($clone, $right, $name, self::$scope);
                 return self::expand($result);
             }
         }

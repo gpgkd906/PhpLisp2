@@ -21,7 +21,6 @@ class TransformBackQuoteOperator extends AbstractOperator {
             $node = new Expression($nodeValue, Type::Expression, Expression::$quoteInstance, $tree);
             return $node;
         } else if(Type::isLispExpression($tree)){
-  
             if("transform" === substr($tree->leftLeaf->nodeValue, 0, 9) ) {
                 $scope[] = $this->name;
                 return Evaluator::evaluate($tree, $scope);

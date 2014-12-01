@@ -292,9 +292,10 @@ class Reader {
             //: 'a'b => 'a 'b 
             //'a 'b => 'a  'b (空白をあける※空白2つはできるかもしれません)
             $sentence = str_replace($special, " " . $special, $sentence);
-            //: 'a  'b => 'a 'b (重複な空白を取り除く)
-            $sentence = Parser::removeDummySpace($sentence);   
         }
+        //: 'a  'b => 'a 'b (重複な空白を取り除く)
+        //$sentence = Parser::removeDummySpace($sentence);   
+        $sentence = Parser::removeDummySpace($sentence);   
         foreach(self::$special as $special => $translate) {
             if(strpos($sentence, $special) === 0) {
                 $test = substr_replace($sentence, "", 0, strlen($special));
