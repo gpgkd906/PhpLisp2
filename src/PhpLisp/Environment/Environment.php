@@ -51,11 +51,21 @@ class Environment {
         Expression::$listInstance = new Expression("list", Type::Symbol);
     }
 
-    public static function inPackage($package) {}
+    public static function inPackage($package) {
+        if($package !== self::$inPackage) {
+            self::$inPackage = $package;
+            self::$packageChain[] = $package;
+        }
+    }
+
+    public static function outPackage() {
+        
+    }
     
     public static function setSymbol($scopeChain, $symbol, $node) {
         //パラメタの約束は常にもっとも内側のスコープに約束する
         $scope = array_pop($scopeChain);
+        $scope = self::$inPackage . '\'' . $scope;
         if(!$symbolTable = self::$symbolTable->get($scope)) {
             $symbolTable = new SymbolTable;
             self::$symbolTable->set($scope, $symbolTable);
@@ -66,6 +76,7 @@ class Environment {
     public static function getSymbol($scopeChain, $symbol) {
         //パラメタのアクセスは内側から外側に辿りついて行く
         while($scope = array_pop($scopeChain)) {
+            $scope = self::$inPackage . '\'' . $scope;
             if(!$symbolTable = self::$symbolTable->get($scope)) {
                 continue;
             }
@@ -90,6 +101,7 @@ class Environment {
     public static function setLambda($scopeChain, $symbol, $node) {
         //ラムダの約束は常にもっとも内側のスコープに約束する
         $scope = array_pop($scopeChain);
+        $scope = self::$inPackage . '\'' . $scope;
         if(!$symbolTable = self::$lambdaTable->get($scope)) {
             $symbolTable = new SymbolTable;
             self::$lambdaTable->set($scope, $symbolTable);
@@ -100,6 +112,7 @@ class Environment {
     public static function getLambda($scopeChain, $symbol) {
         //ラムダのアクセスは内側から外側に辿りついて行く
         while($scope = array_pop($scopeChain)) {
+            $scope = self::$inPackage . '\'' . $scope;
             if(!$symbolTable = self::$lambdaTable->get($scope)) {
                 continue;
             }
