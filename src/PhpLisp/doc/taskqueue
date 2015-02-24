@@ -1,0 +1,10 @@
+1, ScopeChainクラスを追加し、今の配列scopeを置き換える。
+  1-1 ScopeChainにpackage情報を持たせる。
+2, 基本タイプを追加する(Symbol, Scalar, Cons, Expression, Lambda, Macro, BuildinFunction)、今のExpressionを置き換える。
+  2-1, 基本タイプにプロパティリストを持たせる。
+  2-4, 基本タイプにpackage情報を持たせる。
+  2-2, 基本タイプにexecuteメソッドを追加する、今の各Executorクラスを置き換える。
+  2-2, 基本タイプにcar, cdrメソッドを追加する、今のExecutorにあるcar、cdrを置き換える。
+3, Parserを変更し、今のExpressionから基本タイプを利用するように。
+4, Executorを変更し、あるいは場合によって廃止する。
+5, Operatorを簡潔にrefactoryする。
