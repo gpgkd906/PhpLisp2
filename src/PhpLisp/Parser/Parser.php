@@ -119,8 +119,13 @@ class Parser {
                 $inString = $offset;
             }
             if(!$isString) {
-                $symbolId = Environment::generateUniqueId("StringSymbol");
                 $string = self::subString($sentence, $inString, $offset + 1);
+                if(isset(self::$stringTable[$string])) {
+                    $symbolId = self::$stringTable[$string];
+                } else {
+                    $symbolId = Environment::generateUniqueId("StringSymbol");
+                    self::$stringTable[$string] = $symbolId;
+                }
                 Environment::setSymbol(Environment::$rootScope, $symbolId, $string);
                 $sentence = substr_replace($sentence, $symbolId, $inString, $offset + 1 - $inString);
                 $offset = 0;
