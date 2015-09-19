@@ -10,7 +10,6 @@ use PhpLisp\Exception\EvalException as Exception;
 class SymbolEvaluator extends AbstractEvaluator {
 
     public static function evaluate (Expression $node, $scope) {
-        
         if(($result = Environment::getSymbol($scope, $node->nodeValue)) !== null) {
             return $result;
         } else {

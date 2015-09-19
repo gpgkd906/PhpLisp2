@@ -7,7 +7,7 @@ use PhpLisp\Environment\Debug as Debug;
 
 Debug::$mode = true;
 PhpLisp::initialization();
-PhpLisp::write("PhpLisp (Lisp is implement by PHP) 0.1.0 Nov 14 2014 18:11");
+PhpLisp::write("PhpLisp (Common Lisp is implement by PHP) 0.2.0 Nov 14 2014 18:11");
 PhpLisp::write(PHP_EOL);
 PhpLisp::write("Source License: MIT");
 PhpLisp::write(PHP_EOL);

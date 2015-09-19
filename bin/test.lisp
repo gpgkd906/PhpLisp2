@@ -97,8 +97,8 @@ test ;should be 3
 ;(close file)
 
 (defun fib (n)
-  (cond ((eql n 1) 1)
-	((eql n 0) 0)
+  (cond ((eq n 1) 1)
+	((eq n 0) 0)
 	(t (+ (fib (- n 1)) (fib (- n 2))))
 	)) ;should be print the lambda-block
 

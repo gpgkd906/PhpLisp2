@@ -9,4 +9,5 @@ use PhpLisp\PhpLisp as PhpLisp;
 
 Debug::$mode = true;
 PhpLisp::initialization();
-PhpLisp::interpreter("test.lisp");
+//PhpLisp::interpreter("test.lisp");
+PhpLisp::interpreter("test3.lisp");

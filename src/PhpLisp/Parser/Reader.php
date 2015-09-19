@@ -77,9 +77,12 @@ class Reader {
      * @link
      */
     public static function isStringSentence ($sentence) {
-        if(substr_count($sentence, '"') === 2) {
-            if(substr($sentence, 0, 1) === '"') {
-                if(substr($sentence, -1, 1) === '"') {
+        if(substr($sentence, 0, 1) === '"') {
+            if(substr($sentence, -1, 1) === '"') {                
+                if(substr_count($sentence, '"') === 2) {
+                    return true;
+                }
+                if((substr_count($sentence, '"') - substr_count($sentence, '\"')) === 2) {
                     return true;
                 }
             }
@@ -284,6 +287,8 @@ class Reader {
      * @link
      */
     public static function normalize ($sentence) {
+        $sentence = self::normalizeString($sentence);
+        $sentence = Parser::replaceStringWithSymbol($sentence);
         foreach(self::$special as $special => $translate) {
             //: 'a' b => 'a'b
             while(strpos($sentence, $special . " ") !==false) {
@@ -308,6 +313,53 @@ class Reader {
                 }
             }
         }
+        return $sentence;
+    }
+
+    public static function normalizeString($sentence) {
+        //文字列として"をチェック
+        $offset = 0;
+        $isString = false;
+        $sentenceLength = strlen($sentence) - 1;
+        do {
+            if(!isset($sentence[$offset + 1])) {
+                break;
+            }
+            $offset = strpos($sentence, '"', $offset + 1);
+            if($offset == false) {
+                break;
+            }
+            if($offset == 0) {
+                $offset = $offset + 1;
+                continue;
+            }
+            if($sentence[$offset - 1] === "\\") {
+                continue;
+            }
+
+            $isString = ! $isString;
+
+            if($isString) {
+                $beforeChar = $sentence[$offset - 1];
+                if($beforeChar !== " " & $beforeChar !== "\"") {
+                    $sentence = substr_replace($sentence, $beforeChar . " ", $offset - 1, 1);
+                    $sentenceLength = $sentenceLength + 1;
+                    $offset = $offset + 1;
+                }
+            }
+            if(!$isString && isset($sentence[$offset + 1])) {
+                
+                $afterChar = $sentence[$offset + 1];
+                if($afterChar !== " " && $afterChar !== "\"") {
+                    $sentence = substr_replace($sentence, " " . $afterChar, $offset + 1, 1);
+                    $sentenceLength = $sentenceLength + 1;
+                    $offset = $offset + 1;
+                }
+            }
+            if($offset === $sentenceLength) {
+                break;
+            }
+        } while(true);
         return $sentence;
     }
     

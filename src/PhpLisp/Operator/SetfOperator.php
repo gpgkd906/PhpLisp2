@@ -40,7 +40,7 @@ class SetfOperator extends AbstractOperator {
                     throw new Exception("Error: {$nodeString} is not of type SYMBOL.");
                 } else {
                     $symbolKey = Evaluator::asString($symbol);
-                    $value = Evaluator::tryEvalExpression($value, $scope);
+                    $value = Evaluator::evaluate($value, $scope);
                     Environment::setSymbol($scope, $symbolKey, $value);
                     $offset = $offset + 2;
                 }

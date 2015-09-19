@@ -4,6 +4,7 @@ namespace PhpLisp\Parser;
 
 use PhpLisp\Environment\Debug as Debug;
 use PhpLisp\Environment\Environment as Environment;
+use PhpLisp\Environment\SymbolTable as SymbolTable;
 use PhpLisp\Expression\Expression as Expression;
 use PhpLisp\Evaluator\Evaluator as Evaluator;
 use PhpLisp\Expression\Type as Type;
@@ -13,6 +14,8 @@ use PhpLisp\Exception\ParseException as Exception;
 class Parser {
     
     const Group = 100;
+
+    static $stringTable = [];
     
     public static function initialization() {
         Reader::initialization();
@@ -37,6 +40,8 @@ class Parser {
         $sentence = trim($sentence);
         //空白でtoken分解する、Readerが既に正規化を保証してくれるので、再正規化を行わない
         $tokens = explode(" ", $sentence);
+        //シンボルに退避した文字列を復元
+        //$tokens = self::restoreStringWithTokens($tokens);
         $deep = 0;
         $open = $close = null;
         $left = array();
@@ -94,6 +99,55 @@ class Parser {
         return trim($sentence);
     }
 
+    public static function replaceStringWithSymbol($sentence) {
+        $offset = 0;
+        $isString = false;
+        $inString = -1;
+        if(empty($sentence)) {
+            return $sentence;
+        }
+        while(false !== ($offset = strpos($sentence, '"', $offset + 1))) {
+            if($offset === 0) {
+                continue;
+            }
+            if($sentence[$offset - 1] === "\\") {
+                continue;
+            }
+            $isString = ! $isString;
+
+            if($isString) {
+                $inString = $offset;
+            }
+            if(!$isString) {
+                $symbolId = Environment::generateUniqueId("StringSymbol");
+                $string = self::subString($sentence, $inString, $offset + 1);
+                Environment::setSymbol(Environment::$rootScope, $symbolId, $string);
+                $sentence = substr_replace($sentence, $symbolId, $inString, $offset + 1 - $inString);
+                $offset = 0;
+            }
+        }
+        return $sentence;
+    }
+
+    static public function restoreStringWithTokens($tokens) {
+        foreach($tokens as $key => $token) {
+            if(isset(self::$stringTable[$token])) {
+                $tokens[$key] = self::$stringTable[$token];
+            }
+        }
+        return $tokens;
+    }
+
+    static public function subString($string, $index, $offset = -1)
+    {
+        if($offset === -1) {
+            $length = strlen($string) - $offset;
+        } else {
+            $length = $offset - $index;
+        }
+        return substr($string, $index, $length);
+    }
+    
     public static function parse ($sentence, $type, $raw) {
         switch($type) {
         case self::Group:
@@ -117,7 +171,6 @@ class Parser {
             list($sentence_left, $sentence_right, $tokens_left, $tokens_right) = self::separate($sentence);
             $sentence_left = Reader::normalize($sentence_left);
             $sentence_right = Reader::normalize($sentence_right);
-
             $node = new Expression(
                 $raw,
                 $type,
