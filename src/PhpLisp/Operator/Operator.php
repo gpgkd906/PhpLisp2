@@ -23,6 +23,9 @@ class Operator {
             if(substr($file, -1) === "#") {
                 continue;
             }
+            if(substr($file, -3) !== "php") {
+                continue;
+            }
             $name = explode(".", $file)[0];
             $class = 'PhpLisp\\Operator\\' . $name;
             $obj = new $class;
