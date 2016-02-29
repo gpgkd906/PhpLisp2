@@ -23,6 +23,7 @@ class Operator {
             if(substr($file, -1) === "#") {
                 continue;
             }
+            //fix for windows: Desktop.ini
             if(substr($file, -3) !== "php") {
                 continue;
             }
